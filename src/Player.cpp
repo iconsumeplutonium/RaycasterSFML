@@ -8,14 +8,14 @@
 
 using namespace std;
 
-Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed) {
+Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, sf::RenderWindow* window) {
     position.x = (settings.gridSize / 2) * settings.tileSize;
     position.y = (settings.gridSize / 2) * settings.tileSize;
 
     this->settings = settings;
-
     this->rotationSpeed = rotationSpeed;
     this->moveSpeed = moveSpeed;
+    this->window = window;
 
     body = sf::CircleShape(10);
     body.setFillColor(sf::Color::Red);
@@ -28,7 +28,7 @@ Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float m
 void Player::UpdateRotation(float deltaTime) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         rotation -= 10 * rotationSpeed * deltaTime;
-    
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
         rotation += 10 * rotationSpeed * deltaTime;
 
@@ -44,7 +44,7 @@ void Player::UpdatePosition(float deltaTime) {
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
         moveDelta.x += 1;
-    
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
         moveDelta.x -= 1;
 
@@ -68,7 +68,7 @@ void Player::UpdatePosition(float deltaTime) {
 
     if (position.x < 0)
         position.x = 0;
-    
+
     if (position.y < 0)
         position.y = 0;
 
@@ -84,7 +84,7 @@ string Player::DebugStatistics() {
     sf::Vector2f screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, settings);
 
     stringstream stats;
-    stats << fixed << setprecision(3); 
+    stats << fixed << setprecision(3);
     stats << "Position (World Space): (" << position.x << ", " << position.y << ")\n";
     stats << "Position (Screen Space): (" << screenSpacePos.x << ", " << screenSpacePos.y << ")\n";
     stats << "Rotation: " << rotation << "\n";
@@ -92,56 +92,57 @@ string Player::DebugStatistics() {
     return stats.str();
 }
 
-sf::Vector2<float> Player::GetFirstHorizontalIntersection(int tileSize) {
+//@param map: of size settings.gridSize by settings.gridSize
+sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vector<int>> map) {
     //Note: positive y axis is towards the bottom of the window for some reason 
     float radians = rotation * (M_PI / 180.0);
 
-    int tileX = position.x / tileSize;
-    int tileY = position.y / tileSize;
+    int tileX = position.x / settings.tileSize;
+    int tileY = position.y / settings.tileSize;
 
     //position within this cell
-    float dx = position.x - (tileX * tileSize);
-    float dy = position.y - (tileY * tileSize);
-    
-    if (dx < 0)
-        dx = tileSize - abs(dx);
-
+    float dy = position.y - (tileY * settings.tileSize);
     if (dy < 0)
-        dy = tileSize - abs(dy);
+        dy = settings.tileSize - abs(dy);
 
-    float xStep;
-    float firstX, firstY;
-    if (rotation > 0 && rotation <= 90) {
-        dy = ((tileY + 1) * tileSize) - position.y;
-        xStep = dy / tan(radians + 0.000f);
-        
-        firstX = position.x + xStep;
-        firstY = ((tileY + 1) * tileSize);
+    //if looking down (towards positive Y), calculate distance to lower line (y coord of next horizontal line minus current y coord)
+    if (rotation <= 180) {
+        dy = ((tileY + 1) * settings.tileSize) - position.y;
     }
-    else if (rotation > 90 && rotation <= 180) {
-        dy = ((tileY + 1) * tileSize) - position.y;
-        xStep = -dy / tan(radians + 0.000f);
-
-        firstX = position.x - xStep;
-        firstY = ((tileY + 1) * tileSize);
-    }
-    else if (rotation > 180 && rotation <= 270) {
-        dy = position.y - (tileY * tileSize);
-        xStep = dy / tan(radians + 0.000f);
-
-        firstX = position.x - xStep;
-        firstY = position.y - dy;
-    }
+    //if looking up (towards negative y), calculate distance to upper line (y coord of previous horizontal line minus current y coord)
+    //needs to be negative so the math works out
     else {
-        dy = position.y - (tileY * tileSize);
-        xStep = -dy / tan(radians + 0.000f);
-
-        firstX = position.x + xStep;
-        firstY = position.y - dy;
+        dy = -1 * (position.y - (tileY * settings.tileSize));
     }
+    
+    float dx = dy / tan(radians);
 
-    //cout << firstX << ", " << firstY << endl;
+    float firstX = position.x + dx;
+    float firstY = position.y + dy;
+    Utilities::DrawCircle(sf::Vector2f(firstX, firstY), sf::Color::Magenta, settings, window);
 
+    float tileStep = settings.tileSize * (rotation <= 180 ? 1 : -1);
+    float xStep = (1.0f / tan(radians)) * tileStep;
+    float yStep = tileStep;
+    cout << "------------" << endl;
+    while (true) {
+        if (!Utilities::IsInBounds(sf::Vector2f(firstX + xStep, firstY + yStep), settings))
+            break;
+
+        firstX += xStep;
+        firstY += yStep;
+
+
+        int tileCoordX = (firstX / settings.tileSize);
+        int tileCoordY = (firstY / settings.tileSize);
+
+        Utilities::PrintVector(sf::Vector2i(tileCoordX, tileCoordY));
+        //if (map[tileCoordX][tileCoordY] != 0) {
+        Utilities::DrawCircle(sf::Vector2f(firstX, firstY), sf::Color::Magenta, settings, window);
+            //break;
+        //}
+    }
+    cout << "------------" << endl;
     return sf::Vector2(firstX, firstY);
 
 }

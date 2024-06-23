@@ -21,12 +21,13 @@ public:
 	int tileSize;
 	int gridSize;*/
 	Utilities::DisplaySettings settings;
+	sf::RenderWindow* window;
 
 	float rotation;
 	float rotationSpeed;
 
 	//constructor
-	Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed);
+	Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, sf::RenderWindow* window);
 
 	void UpdateRotation(float deltaTime);
 	void UpdatePosition(float deltaTime);
@@ -34,7 +35,7 @@ public:
 	//transforms world coordinates into screen coords
 	void UpdateBodyDisplay();
 
-	sf::Vector2<float> GetFirstHorizontalIntersection(int tileSize);
+	sf::Vector2<float> GetFirstHorizontalIntersection(std::vector<std::vector<int>> map);
 
 	string DebugStatistics();
 };

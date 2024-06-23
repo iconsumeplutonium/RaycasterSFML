@@ -5,6 +5,7 @@
 #include "Player.h"
 #include <filesystem>
 #include "Utilities.h"
+#include <vector>
 
 using namespace std;
 
@@ -15,18 +16,19 @@ Utilities::DisplaySettings settings;
 sf::Vector2 playerPos(0, 0);
 bool isFocus = true;
 
-int map[10][10] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 0, 1, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 1, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 1, 1, 1, 1, 0, 0, 0, 1,
-    1, 0, 1, 0, 0, 1, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+std::vector<std::vector<int>> mapVector = {
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 1, 1, 0, 0, 0, 1},
+    {1, 0, 1, 0, 0, 1, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
+
 
 void GenerateGrid(sf::RenderWindow& window);
 void DrawViews(Player player, sf::RenderWindow& window);
@@ -37,7 +39,7 @@ int main() {
     settings.windowSize = sf::Vector2i(1280, 720);
 
     sf::RenderWindow window(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster");
-    Player player(settings, 20.0f, 100.0f);
+    Player player(settings, 20.0f, 100.0f, &window);
     
     sf::Clock clock;
     sf::Font font;
@@ -95,20 +97,9 @@ void GenerateGrid(sf::RenderWindow& window) {
 
     for (int tileY = 0; tileY < settings.gridSize; tileY++) {
         for (int tileX = 0; tileX < settings.gridSize; tileX++) {
+            tile.setFillColor(mapVector[tileX][tileY] == 0 ? sf::Color::Transparent : sf::Color::Blue);
             
-            if (::map[tileX][tileY] == 0) {
-                tile.setFillColor(sf::Color::Transparent);
-                //tile.setOutlineColor(sf::Color::White);
-            } else {
-                tile.setFillColor(sf::Color::Blue);
-                //tile.setOutlineColor(sf::Color::Blue);
-            }
-
-            //tile coord -> world coord   move 0,0 to window center       put grid center at center of screen
-            //int x = (tileX * tileSize);//  +   (windowSize.x / 2)       -    (gridSize / 2 * tileSize);
-            //int y = (tileY * tileSize);//  +   (windowSize.y / 2)       -    (gridSize / 2 * tileSize);
             sf::Vector2 a = Utilities::TransformWorldSpaceToScreenSpace(sf::Vector2((float)tileX * settings.tileSize, (float)tileY * settings.tileSize), settings);
-
             tile.setPosition(a.x, a.y);
             window.draw(tile);
         }
@@ -132,7 +123,7 @@ void DrawViews(Player player, sf::RenderWindow& window) {
 
 
     //draw first horizontal intersection
-    end = player.GetFirstHorizontalIntersection(settings.tileSize);
+    end = player.GetFirstHorizontalIntersection(mapVector);
     end = Utilities::TransformWorldSpaceToScreenSpace(end, settings);
 
 

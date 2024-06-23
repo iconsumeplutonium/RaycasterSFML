@@ -33,6 +33,12 @@ namespace Utilities {
     }
 
 	sf::Vector2<float> TransformWorldSpaceToScreenSpace(sf::Vector2<float> worldCoord, Utilities::DisplaySettings s);
+
+    //@brief Takes in a world space coordinate and displays a circle in screen space coords
+    void DrawCircle(sf::Vector2f coord, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow* window);
+    
+    bool IsInBounds(sf::Vector2f v, Utilities::DisplaySettings s);
 }
+
 
 #endif
