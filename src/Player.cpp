@@ -4,16 +4,15 @@
 #include <iomanip>
 #include <sstream>
 #include <SFML/System/Vector2.hpp>
-#include "Utilities.cpp"
+#include "Utilities.h"
 
 using namespace std;
 
-Player::Player(int windowSizeX, int windowSizeY, float rotationSpeed, float moveSpeed, int tileSize, int gridSize) {
+Player::Player(sf::Vector2i windowSize, float rotationSpeed, float moveSpeed, int tileSize, int gridSize) {
     position.x = (gridSize / 2) * tileSize;
     position.y = (gridSize / 2) * tileSize;
 
-    windowSize.x = windowSizeX;
-    windowSize.y = windowSizeY;
+    this->windowSize = windowSize;
     this->tileSize = tileSize;
     this->gridSize = gridSize;
 
@@ -79,15 +78,17 @@ void Player::UpdatePosition(float deltaTime) {
 }
 
 void Player::UpdateBodyDisplay() {
-    sf::Vector2 screenSpacePos = TransformWorldSpaceToScreenSpace(sf::Vector2f((float)position.x, (float)position.y), tileSize, gridSize, sf::Vector2i(windowSize.x, windowSize.y));
-    body.setPosition(screenSpacePos.x, screenSpacePos.y);
+    sf::Vector2 screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, tileSize, gridSize, windowSize);
+    body.setPosition(screenSpacePos);
 }
 
 string Player::DebugStatistics() {
+    sf::Vector2f screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, tileSize, gridSize, windowSize);
+
     stringstream stats;
     stats << fixed << setprecision(3); 
     stats << "Position (World Space): (" << position.x << ", " << position.y << ")\n";
-    stats << "Position (Screen Space): (" << position.x + windowSize.x / 2 << ", " << position.y + windowSize.y / 2 << ")\n";
+    stats << "Position (Screen Space): (" << screenSpacePos.x << ", " << screenSpacePos.y << ")\n";
     stats << "Rotation: " << rotation << "\n";
 
     return stats.str();
@@ -141,7 +142,7 @@ sf::Vector2<float> Player::GetFirstHorizontalIntersection(int tileSize) {
         firstY = position.y - dy;
     }
 
-    cout << firstX << ", " << firstY << endl;
+    //cout << firstX << ", " << firstY << endl;
 
     return sf::Vector2(firstX, firstY);
 

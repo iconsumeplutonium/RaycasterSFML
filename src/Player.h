@@ -12,11 +12,11 @@ private:
 
 
 public:
-	vec2 position;
+	sf::Vector2f position;
 	float moveSpeed;
 
 	sf::CircleShape body;
-	vec2 windowSize;
+	sf::Vector2i windowSize;
 	int tileSize;
 	int gridSize;
 
@@ -24,7 +24,7 @@ public:
 	float rotationSpeed;
 
 	//constructor
-	Player(int windowSizeX, int windowSizeY, float rotationSpeed, float moveSpeed, int tileSize, int gridSize);
+	Player(sf::Vector2i windowSize, float rotationSpeed, float moveSpeed, int tileSize, int gridSize);
 
 	void UpdateRotation(float deltaTime);
 	void UpdatePosition(float deltaTime);

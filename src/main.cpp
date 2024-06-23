@@ -4,13 +4,14 @@
 #include <math.h>
 #include "Player.h"
 #include <filesystem>
-#include "Utilities.cpp"
+#include "Utilities.h"
 
 using namespace std;
 
 int tileSize = 50;
 int gridSize = 10;
-sf::Vector2 windowSize(1280, 720);
+sf::Vector2i windowSize(1280, 720);
+Utilities::displaySettings settings;
 sf::Vector2 playerPos(0, 0);
 bool isFocus = true;
 
@@ -31,8 +32,12 @@ void GenerateGrid(sf::RenderWindow& window);
 void DrawViews(Player player, sf::RenderWindow& window);
 
 int main() {
+    //settings.tileSize = 50;
+    //settings.gridSize = 10;
+    //settings.windowSize = sf::Vector2i(1280, 720);
+
     sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "Raycaster");
-    Player player(windowSize.x, windowSize.y, 20.0f, 100.0f, tileSize, gridSize);
+    Player player(windowSize, 20.0f, 100.0f, tileSize, gridSize);
     
     sf::Clock clock;
     sf::Font font;
@@ -102,7 +107,7 @@ void GenerateGrid(sf::RenderWindow& window) {
             //tile coord -> world coord   move 0,0 to window center       put grid center at center of screen
             //int x = (tileX * tileSize);//  +   (windowSize.x / 2)       -    (gridSize / 2 * tileSize);
             //int y = (tileY * tileSize);//  +   (windowSize.y / 2)       -    (gridSize / 2 * tileSize);
-            sf::Vector2 a = TransformWorldSpaceToScreenSpace(sf::Vector2((float)tileX * tileSize, (float)tileY * tileSize), tileSize, gridSize, windowSize);
+            sf::Vector2 a = Utilities::TransformWorldSpaceToScreenSpace(sf::Vector2((float)tileX * tileSize, (float)tileY * tileSize), tileSize, gridSize, windowSize);
 
             tile.setPosition(a.x, a.y);
             window.draw(tile);
@@ -115,22 +120,23 @@ void DrawViews(Player player, sf::RenderWindow& window) {
     float radius = 1000.0f;
 
     //draw view ray
-    sf::Vector2 pos = sf::Vector2(player.position.x, player.position.y);
+    //sf::Vector2 pos = sf::Vector2(player.position.x, player.position.y);
+    sf::Vector2 pos = player.position;
     sf::Vector2 end = sf::Vector2(
         (float) (player.position.x + radius * cos(player.rotation * (M_PI / 180.0))),
         (float) (player.position.y + radius * sin(player.rotation * (M_PI / 180.0)))
     );
 
-    pos = TransformWorldSpaceToScreenSpace(pos, tileSize, gridSize, windowSize);
-    end = TransformWorldSpaceToScreenSpace(end, tileSize, gridSize, windowSize);
-    DrawLine(pos, end, sf::Color::Yellow, window);
+    pos = Utilities::TransformWorldSpaceToScreenSpace(pos, tileSize, gridSize, windowSize);
+    end = Utilities::TransformWorldSpaceToScreenSpace(end, tileSize, gridSize, windowSize);
+    Utilities::DrawLine(pos, end, sf::Color::Yellow, window);
 
 
     //draw first horizontal intersection
     end = player.GetFirstHorizontalIntersection(tileSize);
-    end = TransformWorldSpaceToScreenSpace(end, tileSize, gridSize, windowSize);
+    end = Utilities::TransformWorldSpaceToScreenSpace(end, tileSize, gridSize, windowSize);
 
 
-    DrawLine(pos, end, sf::Color::Magenta, window);
+    Utilities::DrawLine(pos, end, sf::Color::Magenta, window);
     
 }
