@@ -1,5 +1,6 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "Utilities.h"
 
 using namespace std;
 
@@ -16,15 +17,16 @@ public:
 	float moveSpeed;
 
 	sf::CircleShape body;
-	sf::Vector2i windowSize;
+	/*sf::Vector2i windowSize;
 	int tileSize;
-	int gridSize;
+	int gridSize;*/
+	Utilities::DisplaySettings settings;
 
 	float rotation;
 	float rotationSpeed;
 
 	//constructor
-	Player(sf::Vector2i windowSize, float rotationSpeed, float moveSpeed, int tileSize, int gridSize);
+	Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed);
 
 	void UpdateRotation(float deltaTime);
 	void UpdatePosition(float deltaTime);

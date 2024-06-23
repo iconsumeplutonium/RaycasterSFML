@@ -8,10 +8,10 @@
 
 using namespace std;
 
-int tileSize = 50;
-int gridSize = 10;
-sf::Vector2i windowSize(1280, 720);
-Utilities::displaySettings settings;
+//int tileSize = 50;
+//int gridSize = 10;
+//sf::Vector2i windowSize(1280, 720);
+Utilities::DisplaySettings settings;
 sf::Vector2 playerPos(0, 0);
 bool isFocus = true;
 
@@ -32,12 +32,12 @@ void GenerateGrid(sf::RenderWindow& window);
 void DrawViews(Player player, sf::RenderWindow& window);
 
 int main() {
-    //settings.tileSize = 50;
-    //settings.gridSize = 10;
-    //settings.windowSize = sf::Vector2i(1280, 720);
+    settings.tileSize = 50;
+    settings.gridSize = 10;
+    settings.windowSize = sf::Vector2i(1280, 720);
 
-    sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "Raycaster");
-    Player player(windowSize, 20.0f, 100.0f, tileSize, gridSize);
+    sf::RenderWindow window(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster");
+    Player player(settings, 20.0f, 100.0f);
     
     sf::Clock clock;
     sf::Font font;
@@ -88,13 +88,13 @@ void GenerateGrid(sf::RenderWindow& window) {
     //sf::Vector2 startCoord(-(gridSize / 2.0f) * tileSize, -(gridSize / 2.0f) * tileSize);
     sf::Vector2 startCoord(0, 0);
     sf::RectangleShape tile;
-    tile.setSize(sf::Vector2f(tileSize, tileSize));
+    tile.setSize(sf::Vector2f(settings.tileSize, settings.tileSize));
     tile.setFillColor(sf::Color::Transparent);
     tile.setOutlineColor(sf::Color::White);
     tile.setOutlineThickness(1.0f);
 
-    for (int tileY = 0; tileY < gridSize; tileY++) {
-        for (int tileX = 0; tileX < gridSize; tileX++) {
+    for (int tileY = 0; tileY < settings.gridSize; tileY++) {
+        for (int tileX = 0; tileX < settings.gridSize; tileX++) {
             
             if (::map[tileX][tileY] == 0) {
                 tile.setFillColor(sf::Color::Transparent);
@@ -107,7 +107,7 @@ void GenerateGrid(sf::RenderWindow& window) {
             //tile coord -> world coord   move 0,0 to window center       put grid center at center of screen
             //int x = (tileX * tileSize);//  +   (windowSize.x / 2)       -    (gridSize / 2 * tileSize);
             //int y = (tileY * tileSize);//  +   (windowSize.y / 2)       -    (gridSize / 2 * tileSize);
-            sf::Vector2 a = Utilities::TransformWorldSpaceToScreenSpace(sf::Vector2((float)tileX * tileSize, (float)tileY * tileSize), tileSize, gridSize, windowSize);
+            sf::Vector2 a = Utilities::TransformWorldSpaceToScreenSpace(sf::Vector2((float)tileX * settings.tileSize, (float)tileY * settings.tileSize), settings);
 
             tile.setPosition(a.x, a.y);
             window.draw(tile);
@@ -120,21 +120,20 @@ void DrawViews(Player player, sf::RenderWindow& window) {
     float radius = 1000.0f;
 
     //draw view ray
-    //sf::Vector2 pos = sf::Vector2(player.position.x, player.position.y);
     sf::Vector2 pos = player.position;
     sf::Vector2 end = sf::Vector2(
         (float) (player.position.x + radius * cos(player.rotation * (M_PI / 180.0))),
         (float) (player.position.y + radius * sin(player.rotation * (M_PI / 180.0)))
     );
 
-    pos = Utilities::TransformWorldSpaceToScreenSpace(pos, tileSize, gridSize, windowSize);
-    end = Utilities::TransformWorldSpaceToScreenSpace(end, tileSize, gridSize, windowSize);
+    pos = Utilities::TransformWorldSpaceToScreenSpace(pos, settings);
+    end = Utilities::TransformWorldSpaceToScreenSpace(end, settings);
     Utilities::DrawLine(pos, end, sf::Color::Yellow, window);
 
 
     //draw first horizontal intersection
-    end = player.GetFirstHorizontalIntersection(tileSize);
-    end = Utilities::TransformWorldSpaceToScreenSpace(end, tileSize, gridSize, windowSize);
+    end = player.GetFirstHorizontalIntersection(settings.tileSize);
+    end = Utilities::TransformWorldSpaceToScreenSpace(end, settings);
 
 
     Utilities::DrawLine(pos, end, sf::Color::Magenta, window);

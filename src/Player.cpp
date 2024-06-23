@@ -8,13 +8,11 @@
 
 using namespace std;
 
-Player::Player(sf::Vector2i windowSize, float rotationSpeed, float moveSpeed, int tileSize, int gridSize) {
-    position.x = (gridSize / 2) * tileSize;
-    position.y = (gridSize / 2) * tileSize;
+Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed) {
+    position.x = (settings.gridSize / 2) * settings.tileSize;
+    position.y = (settings.gridSize / 2) * settings.tileSize;
 
-    this->windowSize = windowSize;
-    this->tileSize = tileSize;
-    this->gridSize = gridSize;
+    this->settings = settings;
 
     this->rotationSpeed = rotationSpeed;
     this->moveSpeed = moveSpeed;
@@ -78,12 +76,12 @@ void Player::UpdatePosition(float deltaTime) {
 }
 
 void Player::UpdateBodyDisplay() {
-    sf::Vector2 screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, tileSize, gridSize, windowSize);
+    sf::Vector2 screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, settings);
     body.setPosition(screenSpacePos);
 }
 
 string Player::DebugStatistics() {
-    sf::Vector2f screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, tileSize, gridSize, windowSize);
+    sf::Vector2f screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, settings);
 
     stringstream stats;
     stats << fixed << setprecision(3); 

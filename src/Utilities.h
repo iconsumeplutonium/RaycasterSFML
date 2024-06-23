@@ -5,7 +5,7 @@
 #include <SFML/System/Vector2.hpp>
 
 namespace Utilities {
-    struct displaySettings {
+    struct DisplaySettings {
         int tileSize;
         int gridSize;
         sf::Vector2i windowSize;
@@ -32,7 +32,7 @@ namespace Utilities {
         cout << v.x << ", " << v.y << endl;
     }
 
-	sf::Vector2<float> TransformWorldSpaceToScreenSpace(sf::Vector2<float> worldCoord, int tileSize, int gridSize, sf::Vector2<int> windowSize);
+	sf::Vector2<float> TransformWorldSpaceToScreenSpace(sf::Vector2<float> worldCoord, Utilities::DisplaySettings s);
 }
 
 #endif
