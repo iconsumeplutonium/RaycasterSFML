@@ -17,12 +17,14 @@ public:
 
 	sf::CircleShape body;
 	vec2 windowSize;
+	int tileSize;
+	int gridSize;
 
 	float rotation;
 	float rotationSpeed;
 
 	//constructor
-	Player(int windowSizeX, int windowSizeY, float rotationSpeed, float moveSpeed);
+	Player(int windowSizeX, int windowSizeY, float rotationSpeed, float moveSpeed, int tileSize, int gridSize);
 
 	void UpdateRotation(float deltaTime);
 	void UpdatePosition(float deltaTime);

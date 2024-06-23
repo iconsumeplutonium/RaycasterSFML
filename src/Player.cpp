@@ -8,12 +8,14 @@
 
 using namespace std;
 
-Player::Player(int windowSizeX, int windowSizeY, float rotationSpeed, float moveSpeed) {
-    position.x = 0;
-    position.y = 0;
+Player::Player(int windowSizeX, int windowSizeY, float rotationSpeed, float moveSpeed, int tileSize, int gridSize) {
+    position.x = (gridSize / 2) * tileSize;
+    position.y = (gridSize / 2) * tileSize;
 
     windowSize.x = windowSizeX;
     windowSize.y = windowSizeY;
+    this->tileSize = tileSize;
+    this->gridSize = gridSize;
 
     this->rotationSpeed = rotationSpeed;
     this->moveSpeed = moveSpeed;
@@ -67,11 +69,18 @@ void Player::UpdatePosition(float deltaTime) {
     position.x += x * deltaTime * moveSpeed;
     position.y += y * deltaTime * moveSpeed;
 
+    if (position.x < 0)
+        position.x = 0;
+    
+    if (position.y < 0)
+        position.y = 0;
+
     UpdateBodyDisplay();
 }
 
 void Player::UpdateBodyDisplay() {
-    body.setPosition(position.x + windowSize.x / 2, position.y + windowSize.y / 2);
+    sf::Vector2 screenSpacePos = TransformWorldSpaceToScreenSpace(sf::Vector2f((float)position.x, (float)position.y), tileSize, gridSize, sf::Vector2i(windowSize.x, windowSize.y));
+    body.setPosition(screenSpacePos.x, screenSpacePos.y);
 }
 
 string Player::DebugStatistics() {

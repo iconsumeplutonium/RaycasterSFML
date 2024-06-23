@@ -28,12 +28,11 @@ int map[10][10] = {
 };
 
 void GenerateGrid(sf::RenderWindow& window);
-auto GetPlayerDelta();
 void DrawViews(Player player, sf::RenderWindow& window);
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "Raycaster");
-    Player player(windowSize.x, windowSize.y, 20.0f, 100.0f);
+    Player player(windowSize.x, windowSize.y, 20.0f, 100.0f, tileSize, gridSize);
     
     sf::Clock clock;
     sf::Font font;
@@ -81,7 +80,8 @@ int main() {
 }
 
 void GenerateGrid(sf::RenderWindow& window) {
-    sf::Vector2 startCoord(-(gridSize / 2.0f) * tileSize, -(gridSize / 2.0f) * tileSize);
+    //sf::Vector2 startCoord(-(gridSize / 2.0f) * tileSize, -(gridSize / 2.0f) * tileSize);
+    sf::Vector2 startCoord(0, 0);
     sf::RectangleShape tile;
     tile.setSize(sf::Vector2f(tileSize, tileSize));
     tile.setFillColor(sf::Color::Transparent);
@@ -100,23 +100,14 @@ void GenerateGrid(sf::RenderWindow& window) {
             }
 
             //tile coord -> world coord   move 0,0 to window center       put grid center at center of screen
-            int x = (tileX * tileSize)    +   (windowSize.x / 2)     -    (gridSize / 2 * tileSize);
-            int y = (tileY * tileSize)    +   (windowSize.y / 2)     -    (gridSize / 2 * tileSize);
+            //int x = (tileX * tileSize);//  +   (windowSize.x / 2)       -    (gridSize / 2 * tileSize);
+            //int y = (tileY * tileSize);//  +   (windowSize.y / 2)       -    (gridSize / 2 * tileSize);
+            sf::Vector2 a = TransformWorldSpaceToScreenSpace(sf::Vector2((float)tileX * tileSize, (float)tileY * tileSize), tileSize, gridSize, windowSize);
 
-            tile.setPosition(x, y);
+            tile.setPosition(a.x, a.y);
             window.draw(tile);
         }
     }
-}
-
-auto GetPlayerDelta() {
-    //if (!isFocus)
-        return sf::Vector2(0, 0);
-
-    /*sf::Vector2 moveDelta(0, 0);
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        moveDelta.*/
 }
 
 void DrawViews(Player player, sf::RenderWindow& window) {
@@ -130,11 +121,15 @@ void DrawViews(Player player, sf::RenderWindow& window) {
         (float) (player.position.y + radius * sin(player.rotation * (M_PI / 180.0)))
     );
 
+    pos = TransformWorldSpaceToScreenSpace(pos, tileSize, gridSize, windowSize);
+    end = TransformWorldSpaceToScreenSpace(end, tileSize, gridSize, windowSize);
     DrawLine(pos, end, sf::Color::Yellow, window);
 
 
     //draw first horizontal intersection
     end = player.GetFirstHorizontalIntersection(tileSize);
+    end = TransformWorldSpaceToScreenSpace(end, tileSize, gridSize, windowSize);
+
 
     DrawLine(pos, end, sf::Color::Magenta, window);
     
