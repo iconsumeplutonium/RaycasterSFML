@@ -9,9 +9,7 @@
 
 using namespace std;
 
-//int tileSize = 50;
-//int gridSize = 10;
-//sf::Vector2i windowSize(1280, 720);
+int FOV = 70;
 Utilities::DisplaySettings settings;
 sf::Vector2 playerPos(0, 0);
 bool isFocus = true;
@@ -32,6 +30,7 @@ std::vector<std::vector<int>> mapVector = {
 
 void GenerateGrid(sf::RenderWindow& window);
 void DrawViews(Player player, sf::RenderWindow& window);
+void DrawViews2(int FOV, Player player, sf::RenderWindow& window);
 
 int main() {
     settings.tileSize = 50;
@@ -39,7 +38,7 @@ int main() {
     settings.windowSize = sf::Vector2i(1280, 720);
 
     sf::RenderWindow window(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster");
-    Player player(settings, 2.0f, 100.0f, &window);
+    Player player(settings, 20.0f, 100.0f, FOV, &window);
     
     sf::Clock clock;
     sf::Font font;
@@ -73,9 +72,11 @@ int main() {
         window.draw(player.body);
 
         if (isFocus) {
-            player.UpdateRotation(deltaTime.asSeconds());
-            player.UpdatePosition(deltaTime.asSeconds());
-            DrawViews(player, window);
+            /*player.UpdateRotation(deltaTime.asSeconds());
+            player.UpdatePosition(deltaTime.asSeconds());*/
+            player.Update(deltaTime.asSeconds());
+            //DrawViews(player, window);
+            DrawViews2(FOV, player, window);
         }
 
         debugText.setString(player.DebugStatistics());
@@ -117,14 +118,12 @@ void DrawViews(Player player, sf::RenderWindow& window) {
         (float) (player.position.y + radius * sin(player.rotation * (M_PI / 180.0)))
     );
 
-    //pos = Utilities::TransformWorldSpaceToScreenSpace(pos, settings);
-    //end = Utilities::TransformWorldSpaceToScreenSpace(end, settings);
     Utilities::DrawLine(pos, end, sf::Color::Yellow, window, settings);
 
 
-    //draw first horizontal intersection
-    sf::Vector2f closestHorizIntersect = player.GetFirstHorizontalIntersection(mapVector);
-    sf::Vector2f closestVertIntersect = player.GetFirstVerticalIntersection(mapVector);
+    //get intersections
+    sf::Vector2f closestHorizIntersect = player.GetFirstHorizontalIntersection(mapVector, player.rotation);
+    sf::Vector2f closestVertIntersect = player.GetFirstVerticalIntersection(mapVector, player.rotation);
 
     if (closestVertIntersect.x < 0 && closestHorizIntersect.x < 0)
         return;
@@ -138,15 +137,25 @@ void DrawViews(Player player, sf::RenderWindow& window) {
 
 
     sf::Vector2f closestPoint = sf::Magnitude(closestHorizIntersect - player.position) < sf::Magnitude(closestVertIntersect - player.position) ? closestHorizIntersect : closestVertIntersect;
-    cout << sf::Magnitude(closestHorizIntersect - player.position) << ",  " << sf::Magnitude(closestVertIntersect - player.position) << endl;
+   // cout << sf::Magnitude(closestHorizIntersect - player.position) << ",  " << sf::Magnitude(closestVertIntersect - player.position) << endl;
 
 
-    Utilities::DrawCircle(closestHorizIntersect, sf::Color::Magenta, settings, &window);
-    Utilities::DrawCircle(closestVertIntersect, sf::Color::Magenta, settings, &window);
+    /*Utilities::DrawCircle(closestHorizIntersect, sf::Color::Magenta, settings, &window);
+    Utilities::DrawCircle(closestVertIntersect, sf::Color::Magenta, settings, &window);*/
 
-    Utilities::DrawCircle(closestPoint, sf::Color::Green, settings, &window);
-    
+    Utilities::DrawCircle(closestPoint, sf::Color::Green, settings, &window);    
     Utilities::DrawLine(pos, closestPoint, sf::Color::Magenta, window, settings);
-    
-    
+}
+
+void DrawViews2(int FOV, Player player, sf::RenderWindow& window) {
+    for (int i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i++) {
+        float rot = i;
+        if (rot < 0)
+            rot += 360;
+        if (rot > 360)
+            rot -= 360;
+
+        sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot);
+        Utilities::DrawLine(player.position, intersection, sf::Color::Magenta, window, settings);
+    }
 }

@@ -22,8 +22,6 @@ namespace Utilities {
 
         for (int i = 0; i <= 1; i++) {
             line[i].color = color;
-            //line[i].position.x += windowSize.x / 2;
-            //line[i].position.y += windowSize.y / 2;
             line[i].position = TransformWorldSpaceToScreenSpace(line[i].position, s);
         }
         window.draw(line, 2, sf::Lines);

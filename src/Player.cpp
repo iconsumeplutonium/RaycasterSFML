@@ -8,7 +8,7 @@
 
 using namespace std;
 
-Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, sf::RenderWindow* window) {
+Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, int FOV, sf::RenderWindow* window) {
     position.x = (settings.gridSize / 2) * settings.tileSize;
     position.y = (settings.gridSize / 2) * settings.tileSize;
 
@@ -16,6 +16,7 @@ Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float m
     this->rotationSpeed = rotationSpeed;
     this->moveSpeed = moveSpeed;
     this->window = window;
+    this->FOV = FOV;
 
     body = sf::CircleShape(10);
     body.setFillColor(sf::Color::Red);
@@ -86,6 +87,22 @@ void Player::UpdateBodyDisplay() {
     body.setPosition(screenSpacePos);
 }
 
+void Player::Update(float deltaTime) {
+    UpdatePosition(deltaTime);
+    UpdateRotation(deltaTime);
+
+    //update FOV
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+        FOV++;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+        FOV--;
+
+    if (FOV < 0) FOV = 0;
+    if (FOV > 360) FOV = 360;
+
+}
+
 string Player::DebugStatistics() {
     sf::Vector2f screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, settings);
 
@@ -99,7 +116,7 @@ string Player::DebugStatistics() {
 }
 
 //@param map: of size settings.gridSize by settings.gridSize
-sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vector<int>> map) {
+sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vector<int>> map, float rotation) {
     //Note: positive y axis is towards the bottom of the window for some reason 
     float radians = rotation * (M_PI / 180.0);
 
@@ -131,6 +148,7 @@ sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vecto
     float xStep = (1.0f / tan(radians + 0.0001f)) * tileStep;
     float yStep = tileStep;
 
+    /*cout << "xStep: " << xStep << endl;*/
     sf::Vector2f rayPos(position.x, position.y);
     bool firstIter = true;
 
@@ -138,8 +156,8 @@ sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vecto
     bool intersectedWall = false;
 
     while (true) {
-        if (!Utilities::IsInBounds(sf::Vector2f(rayPos.x + xStep, rayPos.y + yStep), settings))
-            break;
+        /*if (!Utilities::IsInBounds(sf::Vector2f(rayPos.x + xStep, rayPos.y + yStep), settings))
+            break;*/
 
         if (firstIter) {
             rayPos.x += dx;
@@ -165,10 +183,10 @@ sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vecto
 
 
         //Utilities::PrintVector(sf::Vector2i(tileCoordX, tileCoordY));
-        //Utilities::DrawCircle(sf::Vector2f(tileCoordX, tileCoordY), sf::Color::Magenta, settings, window);
-        //Utilities::DrawCircle(rayPos, sf::Color::Magenta, settings, window);
+        /*Utilities::DrawCircle(sf::Vector2f(tX, tY), sf::Color::Green, settings, window);
+        Utilities::DrawCircle(rayPos, sf::Color::Magenta, settings, window);*/
 
-        if (tileCoordX > settings.gridSize - 1 || tileCoordY > settings.gridSize - 1)
+        if (tileCoordX > settings.gridSize - 1 || tileCoordY > settings.gridSize - 1 || tileCoordX < 0 || tileCoordY < 0)
             break;
 
         if (map[tileCoordX][tileCoordY] != 0) {
@@ -190,7 +208,7 @@ sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vecto
 }
 
 //@param map: of size settings.gridSize by settings.gridSize
-sf::Vector2<float> Player::GetFirstVerticalIntersection(std::vector<std::vector<int>> map) {
+sf::Vector2<float> Player::GetFirstVerticalIntersection(std::vector<std::vector<int>> map, float rotation) {
     //Note: positive y axis is towards the bottom of the window for some reason 
     float radians = rotation * (M_PI / 180.0);
 
@@ -227,8 +245,8 @@ sf::Vector2<float> Player::GetFirstVerticalIntersection(std::vector<std::vector<
     bool intersectedWall = false;
 
     while (true) {
-        if (!Utilities::IsInBounds(sf::Vector2f(rayPos.x + xStep, rayPos.y + yStep), settings))
-            break;
+        /*if (!Utilities::IsInBounds(sf::Vector2f(rayPos.x + xStep, rayPos.y + yStep), settings))
+            break;*/
 
         if (firstIter) {
             rayPos.x += dx;
@@ -257,7 +275,7 @@ sf::Vector2<float> Player::GetFirstVerticalIntersection(std::vector<std::vector<
         //Utilities::DrawCircle(sf::Vector2f(tX, tY), sf::Color::Green, settings, window);
         //Utilities::DrawCircle(rayPos, sf::Color::Magenta, settings, window);
 
-        if (tileCoordX > settings.gridSize - 1 || tileCoordY > settings.gridSize - 1)
+        if (tileCoordX > settings.gridSize - 1 || tileCoordY > settings.gridSize - 1 || tileCoordX < 0 || tileCoordY < 0)
             break;
 
         if (map[tileCoordX][tileCoordY] != 0) {
@@ -275,4 +293,24 @@ sf::Vector2<float> Player::GetFirstVerticalIntersection(std::vector<std::vector<
 
     //return -1 if ray never intersected a wall
     return (intersectedWall) ? rayPos : sf::Vector2f(-1.0f, -1.0f);
+}
+
+sf::Vector2<float> Player::GetFirstIntersection(std::vector<std::vector<int>> mapVector, float rotation) {
+    sf::Vector2f closestHorizIntersect = GetFirstHorizontalIntersection(mapVector, rotation);
+    sf::Vector2f closestVertIntersect = GetFirstVerticalIntersection(mapVector, rotation);
+
+    if (closestVertIntersect.x < 0 && closestHorizIntersect.x < 0)
+        return sf::Vector2f(-1.0f, -1.0f);
+
+    //if no intersection, set it to be a massive number so its magnitude is always larger than the other vector, and thus the other vector gets chosen
+    if (closestHorizIntersect.x < 0)
+        closestHorizIntersect = sf::Vector2f(9999, 9999);
+
+    if (closestVertIntersect.x < 0)
+        closestVertIntersect = sf::Vector2f(9999, 9999);
+
+    sf::Vector2f closestPoint = sf::Magnitude(closestHorizIntersect - position) < sf::Magnitude(closestVertIntersect - position) ? closestHorizIntersect : closestVertIntersect;
+
+    
+    return closestPoint;
 }
