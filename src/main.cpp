@@ -126,17 +126,21 @@ void DrawViews(Player player, sf::RenderWindow& window) {
     sf::Vector2f closestHorizIntersect = player.GetFirstHorizontalIntersection(mapVector);
     sf::Vector2f closestVertIntersect = player.GetFirstVerticalIntersection(mapVector);
 
-    cout << Utilities::Magnitude(closestHorizIntersect) << ", " << Utilities::Magnitude(closestVertIntersect) << endl;
 
     if (closestVertIntersect.x < 0 && closestHorizIntersect.x < 0)
         return;
 
     if (closestHorizIntersect.x < 0)
-        closestHorizIntersect = sf::Vector2f(LONG_MAX, LONG_MAX);
+        closestHorizIntersect = sf::Vector2f(9999, 9999);
 
     if (closestVertIntersect.x < 0)
-        closestVertIntersect = sf::Vector2f(LONG_MAX, LONG_MAX);
+        closestVertIntersect = sf::Vector2f(9999, 9999);
 
+    cout << "Horiz: [";
+    Utilities::PrintVector(closestHorizIntersect);
+    cout << "] (" << Utilities::Magnitude(closestHorizIntersect) << "), Vert: [";
+    Utilities::PrintVector(closestVertIntersect);
+    cout << "] (" << Utilities::Magnitude(closestVertIntersect) << ")" << endl;
 
     sf::Vector2f closestPoint = Utilities::Magnitude(closestHorizIntersect) < Utilities::Magnitude(closestVertIntersect) ? closestHorizIntersect : closestVertIntersect;
 
@@ -144,8 +148,11 @@ void DrawViews(Player player, sf::RenderWindow& window) {
     //end = player.GetFirstVerticalIntersection(mapVector);
     //if (end.x < 0.0f)
     //    return;
+    //closestPoint = closestVertIntersect;
+    Utilities::DrawCircle(closestHorizIntersect, sf::Color::Magenta, settings, &window);
+    Utilities::DrawCircle(closestVertIntersect, sf::Color::Magenta, settings, &window);
 
-    Utilities::DrawCircle(closestPoint, sf::Color::Magenta, settings, &window);
+    Utilities::DrawCircle(closestPoint, sf::Color::Green, settings, &window);
     closestPoint = Utilities::TransformWorldSpaceToScreenSpace(closestPoint, settings);
 
     

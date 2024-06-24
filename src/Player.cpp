@@ -128,7 +128,7 @@ sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vecto
     Utilities::DrawCircle(sf::Vector2f(firstileCoordX, firstileCoordY), sf::Color::Magenta, settings, window);*/
 
     float tileStep = settings.tileSize * (rotation <= 180 ? 1 : -1);
-    float xStep = (1.0f / tan(radians)) * tileStep;
+    float xStep = (1.0f / tan(radians + 0.0001f)) * tileStep;
     float yStep = tileStep;
 
     sf::Vector2f rayPos(position.x, position.y);
@@ -210,7 +210,7 @@ sf::Vector2<float> Player::GetFirstVerticalIntersection(std::vector<std::vector<
         dx = -1 * (position.x - (tileX * settings.tileSize));
     }
 
-    float dy = dx * tan(radians);
+    float dy = dx * tan(radians + 0.0001f);
     float firstTileCoordX = position.x + dx;
     float firstTileCoordY = position.y + dy;
     //Utilities::DrawCircle(sf::Vector2f(firstTileCoordX, firstTileCoordY), sf::Color::Magenta, settings, window);

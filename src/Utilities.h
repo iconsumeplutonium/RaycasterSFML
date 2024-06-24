@@ -29,7 +29,7 @@ namespace Utilities {
 
     template<typename T>
     void PrintVector(sf::Vector2<T> v) {
-        cout << v.x << ", " << v.y << endl;
+        cout << v.x << ", " << v.y;
     }
 
     template<typename T>
