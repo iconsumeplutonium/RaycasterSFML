@@ -36,6 +36,7 @@ public:
 	void UpdateBodyDisplay();
 
 	sf::Vector2<float> GetFirstHorizontalIntersection(std::vector<std::vector<int>> map);
+	sf::Vector2<float> GetFirstVerticalIntersection(std::vector<std::vector<int>> map);
 
 	string DebugStatistics();
 };

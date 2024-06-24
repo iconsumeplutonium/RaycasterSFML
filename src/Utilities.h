@@ -32,6 +32,11 @@ namespace Utilities {
         cout << v.x << ", " << v.y << endl;
     }
 
+    template<typename T>
+    float Magnitude(sf::Vector2<T> v) {
+        return sqrt(v.x * v.x + v.y * v.y);
+    }
+
 	sf::Vector2<float> TransformWorldSpaceToScreenSpace(sf::Vector2<float> worldCoord, Utilities::DisplaySettings s);
 
     //@brief Takes in a world space coordinate and displays a circle in screen space coords

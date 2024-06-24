@@ -123,13 +123,33 @@ void DrawViews(Player player, sf::RenderWindow& window) {
 
 
     //draw first horizontal intersection
-    end = player.GetFirstHorizontalIntersection(mapVector);
-    if (end.x < 0.0f)
+    sf::Vector2f closestHorizIntersect = player.GetFirstHorizontalIntersection(mapVector);
+    sf::Vector2f closestVertIntersect = player.GetFirstVerticalIntersection(mapVector);
+
+    cout << Utilities::Magnitude(closestHorizIntersect) << ", " << Utilities::Magnitude(closestVertIntersect) << endl;
+
+    if (closestVertIntersect.x < 0 && closestHorizIntersect.x < 0)
         return;
 
-    end = Utilities::TransformWorldSpaceToScreenSpace(end, settings);
+    if (closestHorizIntersect.x < 0)
+        closestHorizIntersect = sf::Vector2f(LONG_MAX, LONG_MAX);
+
+    if (closestVertIntersect.x < 0)
+        closestVertIntersect = sf::Vector2f(LONG_MAX, LONG_MAX);
+
+
+    sf::Vector2f closestPoint = Utilities::Magnitude(closestHorizIntersect) < Utilities::Magnitude(closestVertIntersect) ? closestHorizIntersect : closestVertIntersect;
+
+
+    //end = player.GetFirstVerticalIntersection(mapVector);
+    //if (end.x < 0.0f)
+    //    return;
+
+    Utilities::DrawCircle(closestPoint, sf::Color::Magenta, settings, &window);
+    closestPoint = Utilities::TransformWorldSpaceToScreenSpace(closestPoint, settings);
 
     
-    Utilities::DrawLine(pos, end, sf::Color::Magenta, window);
+    Utilities::DrawLine(pos, closestPoint, sf::Color::Magenta, window);
+    
     
 }
