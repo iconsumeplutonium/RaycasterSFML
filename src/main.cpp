@@ -1,10 +1,10 @@
+#include "Utilities.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "Player.h"
 #include <filesystem>
-#include "Utilities.h"
 #include <vector>
 
 using namespace std;
@@ -39,7 +39,7 @@ int main() {
     settings.windowSize = sf::Vector2i(1280, 720);
 
     sf::RenderWindow window(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster");
-    Player player(settings, 8.0f, 100.0f, &window);
+    Player player(settings, 2.0f, 100.0f, &window);
     
     sf::Clock clock;
     sf::Font font;
@@ -117,9 +117,9 @@ void DrawViews(Player player, sf::RenderWindow& window) {
         (float) (player.position.y + radius * sin(player.rotation * (M_PI / 180.0)))
     );
 
-    pos = Utilities::TransformWorldSpaceToScreenSpace(pos, settings);
-    end = Utilities::TransformWorldSpaceToScreenSpace(end, settings);
-    Utilities::DrawLine(pos, end, sf::Color::Yellow, window);
+    //pos = Utilities::TransformWorldSpaceToScreenSpace(pos, settings);
+    //end = Utilities::TransformWorldSpaceToScreenSpace(end, settings);
+    Utilities::DrawLine(pos, end, sf::Color::Yellow, window, settings);
 
 
     //draw first horizontal intersection
@@ -137,17 +137,16 @@ void DrawViews(Player player, sf::RenderWindow& window) {
         closestVertIntersect = sf::Vector2f(9999, 9999);
 
 
-    sf::Vector2f closestPoint = Utilities::Magnitude(closestHorizIntersect - player.position) < Utilities::Magnitude(closestVertIntersect - player.position) ? closestHorizIntersect : closestVertIntersect;
+    sf::Vector2f closestPoint = sf::Magnitude(closestHorizIntersect - player.position) < sf::Magnitude(closestVertIntersect - player.position) ? closestHorizIntersect : closestVertIntersect;
+    cout << sf::Magnitude(closestHorizIntersect - player.position) << ",  " << sf::Magnitude(closestVertIntersect - player.position) << endl;
 
 
-    /*Utilities::DrawCircle(closestHorizIntersect, sf::Color::Magenta, settings, &window);
-    Utilities::DrawCircle(closestVertIntersect, sf::Color::Magenta, settings, &window);*/
+    Utilities::DrawCircle(closestHorizIntersect, sf::Color::Magenta, settings, &window);
+    Utilities::DrawCircle(closestVertIntersect, sf::Color::Magenta, settings, &window);
 
     Utilities::DrawCircle(closestPoint, sf::Color::Green, settings, &window);
-    closestPoint = Utilities::TransformWorldSpaceToScreenSpace(closestPoint, settings);
-
     
-    Utilities::DrawLine(pos, closestPoint, sf::Color::Magenta, window);
+    Utilities::DrawLine(pos, closestPoint, sf::Color::Magenta, window, settings);
     
     
 }

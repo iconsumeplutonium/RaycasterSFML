@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <iostream>
 
 namespace Utilities {
     struct DisplaySettings {
@@ -12,7 +13,7 @@ namespace Utilities {
     };
 
     template<typename T>
-    void DrawLine(sf::Vector2<T> start, sf::Vector2<T> end, sf::Color color, sf::RenderWindow& window) {
+    void DrawLine(sf::Vector2<T> start, sf::Vector2<T> end, sf::Color color, sf::RenderWindow& window, DisplaySettings s) {
         sf::Vertex line[2];
 
         //draw view ray
@@ -23,18 +24,9 @@ namespace Utilities {
             line[i].color = color;
             //line[i].position.x += windowSize.x / 2;
             //line[i].position.y += windowSize.y / 2;
+            line[i].position = TransformWorldSpaceToScreenSpace(line[i].position, s);
         }
         window.draw(line, 2, sf::Lines);
-    }
-
-    template<typename T>
-    void PrintVector(sf::Vector2<T> v) {
-        cout << v.x << ", " << v.y;
-    }
-
-    template<typename T>
-    float Magnitude(sf::Vector2<T> v) {
-        return sqrt(v.x * v.x + v.y * v.y);
     }
 
 	sf::Vector2<float> TransformWorldSpaceToScreenSpace(sf::Vector2<float> worldCoord, Utilities::DisplaySettings s);
@@ -45,5 +37,18 @@ namespace Utilities {
     bool IsInBounds(sf::Vector2f v, Utilities::DisplaySettings s);
 }
 
+//overloading SFML's vector2 operators because it just doesnt do this already for some reason
+//modifying the namespace directly because screw you
+namespace sf {
+    template<typename T>
+    inline std::ostream& operator<<(std::ostream& stream, const sf::Vector2<T> v) {
+        return stream << "(" << v.x << ", " << v.y << ")";
+    }
+
+    template<typename T>
+    inline float Magnitude(const sf::Vector2<T> v) {
+        return sqrt(v.x * v.x + v.y * v.y);
+    }
+}
 
 #endif
