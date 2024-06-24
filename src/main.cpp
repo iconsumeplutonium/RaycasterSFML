@@ -39,7 +39,7 @@ int main() {
     settings.windowSize = sf::Vector2i(1280, 720);
 
     sf::RenderWindow window(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster");
-    Player player(settings, 20.0f, 100.0f, &window);
+    Player player(settings, 2.0f, 100.0f, &window);
     
     sf::Clock clock;
     sf::Font font;
@@ -124,9 +124,12 @@ void DrawViews(Player player, sf::RenderWindow& window) {
 
     //draw first horizontal intersection
     end = player.GetFirstHorizontalIntersection(mapVector);
+    if (end.x < 0.0f)
+        return;
+
     end = Utilities::TransformWorldSpaceToScreenSpace(end, settings);
 
-
+    
     Utilities::DrawLine(pos, end, sf::Color::Magenta, window);
     
 }

@@ -72,6 +72,12 @@ void Player::UpdatePosition(float deltaTime) {
     if (position.y < 0)
         position.y = 0;
 
+    if (position.x > (settings.tileSize * settings.gridSize))
+        position.x = (settings.tileSize * settings.gridSize);
+    
+    if (position.y > (settings.tileSize * settings.gridSize))
+        position.y = (settings.tileSize * settings.gridSize);
+
     UpdateBodyDisplay();
 }
 
@@ -117,32 +123,69 @@ sf::Vector2<float> Player::GetFirstHorizontalIntersection(std::vector<std::vecto
     
     float dx = dy / tan(radians);
 
-    float firstX = position.x + dx;
-    float firstY = position.y + dy;
-    Utilities::DrawCircle(sf::Vector2f(firstX, firstY), sf::Color::Magenta, settings, window);
+    /*float firstileCoordX = position.x + dx;
+    float firstileCoordY = position.y + dy;
+    Utilities::DrawCircle(sf::Vector2f(firstileCoordX, firstileCoordY), sf::Color::Magenta, settings, window);*/
 
     float tileStep = settings.tileSize * (rotation <= 180 ? 1 : -1);
     float xStep = (1.0f / tan(radians)) * tileStep;
     float yStep = tileStep;
-    cout << "------------" << endl;
+
+    sf::Vector2f rayPos(position.x, position.y);
+    bool firstIter = true;
+
+    int numIntersections = 0;
+    bool intersectedWall = false;
+
     while (true) {
-        if (!Utilities::IsInBounds(sf::Vector2f(firstX + xStep, firstY + yStep), settings))
+        if (!Utilities::IsInBounds(sf::Vector2f(rayPos.x + xStep, rayPos.y + yStep), settings))
             break;
 
-        firstX += xStep;
-        firstY += yStep;
+        if (firstIter) {
+            rayPos.x += dx;
+            rayPos.y += dy;
+            firstIter = false;
+        }
+        else {
+            rayPos.x += xStep;
+            rayPos.y += yStep;
+        }
+
+        int tX = (((int) rayPos.x / settings.tileSize)) * settings.tileSize + (settings.tileSize / 2.0f);
+        int tY = (((int) rayPos.y / settings.tileSize)) * settings.tileSize + (settings.tileSize / 2.0f);
+
+        int tileCoordX = (((int)rayPos.x / settings.tileSize));
+        int tileCoordY = (((int)rayPos.y / settings.tileSize));
+
+        //if we are looking up (
+        if (rotation >= 180 && tileCoordY + 1 < settings.gridSize) {
+            tileCoordY --;
+            tY -= settings.tileSize * 1;
+        }
 
 
-        int tileCoordX = (firstX / settings.tileSize);
-        int tileCoordY = (firstY / settings.tileSize);
+        //Utilities::PrintVector(sf::Vector2i(tileCoordX, tileCoordY));
+        //Utilities::DrawCircle(sf::Vector2f(tileCoordX, tileCoordY), sf::Color::Magenta, settings, window);
+        //Utilities::DrawCircle(rayPos, sf::Color::Magenta, settings, window);
 
-        Utilities::PrintVector(sf::Vector2i(tileCoordX, tileCoordY));
-        //if (map[tileCoordX][tileCoordY] != 0) {
-        Utilities::DrawCircle(sf::Vector2f(firstX, firstY), sf::Color::Magenta, settings, window);
-            //break;
-        //}
+        if (tileCoordX > settings.gridSize - 1 || tileCoordY > settings.gridSize - 1)
+            break;
+
+        if (map[tileCoordX][tileCoordY] != 0) {
+            intersectedWall = true;
+            break;
+        }
+        
+        numIntersections++;
     }
-    cout << "------------" << endl;
-    return sf::Vector2(firstX, firstY);
+
+    //need to return error val if 
+    // 1. ray has 0 intersections
+    // 2. ray has intersections but none of them are with walls
+
+    Utilities::DrawCircle(rayPos, sf::Color::Magenta, settings, window);
+
+    cout << numIntersections << ", " << intersectedWall << endl;
+    return (intersectedWall) ? rayPos : sf::Vector2f(-1.0f, -1.0f);
 
 }
