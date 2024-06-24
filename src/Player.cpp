@@ -1,10 +1,10 @@
-#include "Player.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "Utilities.h"
+#include "Player.h"
+#include <SFML/System/Vector2.hpp>
 #include <iomanip>
 #include <sstream>
-#include <SFML/System/Vector2.hpp>
-#include "Utilities.h"
 
 using namespace std;
 
@@ -85,6 +85,7 @@ void Player::UpdatePosition(float deltaTime) {
 void Player::UpdateBodyDisplay() {
     sf::Vector2 screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, settings);
     body.setPosition(screenSpacePos);
+    window->draw(body);
 }
 
 void Player::Update(float deltaTime) {
@@ -98,7 +99,7 @@ void Player::Update(float deltaTime) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
         FOV--;
 
-    if (FOV < 0) FOV = 0;
+    if (FOV < 1) FOV = 1;
     if (FOV > 360) FOV = 360;
 
 }
@@ -107,10 +108,11 @@ string Player::DebugStatistics() {
     sf::Vector2f screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, settings);
 
     stringstream stats;
-    stats << fixed << setprecision(3);
-    stats << "Position (World Space): (" << position.x << ", " << position.y << ")\n";
+    stats << fixed << setprecision(3) << setw(6);
+    stats << "Position (World Space):  (" << position.x << ", " << position.y << ")\n";
     stats << "Position (Screen Space): (" << screenSpacePos.x << ", " << screenSpacePos.y << ")\n";
     stats << "Rotation: " << rotation << "\n";
+    stats << "FOV: " << FOV << "\n";
 
     return stats.str();
 }

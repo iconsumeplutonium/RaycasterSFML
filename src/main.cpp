@@ -1,9 +1,9 @@
-#include "Utilities.h"
-#include <SFML/Graphics.hpp>
-#include <iostream>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <SFML/Graphics.hpp>
+#include "Utilities.h"
 #include "Player.h"
+#include <iostream>
 #include <filesystem>
 #include <vector>
 
@@ -42,17 +42,16 @@ int main() {
     
     sf::Clock clock;
     sf::Font font;
-    if (!font.loadFromFile("retro_computer.ttf")) {
+    if (!font.loadFromFile("fonts/ticketing.regular.ttf")) {
         cout << "font not loaded" << endl;
         std::string currentDir = std::filesystem::current_path().string();
         std::cout << "Current working directory: " << currentDir << std::endl;
     }
     sf::Text debugText;
     debugText.setFont(font);
-    debugText.setCharacterSize(15);
+    debugText.setCharacterSize(23);
     debugText.setFillColor(sf::Color::White);
     debugText.setPosition(sf::Vector2(10.0f, 10.0f));
-
 
     while (window.isOpen()) {
         sf::Event event;
@@ -72,8 +71,6 @@ int main() {
         window.draw(player.body);
 
         if (isFocus) {
-            /*player.UpdateRotation(deltaTime.asSeconds());
-            player.UpdatePosition(deltaTime.asSeconds());*/
             player.Update(deltaTime.asSeconds());
             //DrawViews(player, window);
             DrawViews2(FOV, player, window);

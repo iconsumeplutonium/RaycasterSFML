@@ -14,6 +14,11 @@ add_executable(main src/main.cpp "src/Player.h" "src/Player.cpp"  "src/Utilities
 target_link_libraries(main PRIVATE sfml-graphics)
 target_compile_features(main PRIVATE cxx_std_17)
 
+add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/src/fonts"
+    $<TARGET_FILE_DIR:main>/fonts)
+
 if(WIN32)
     add_custom_command(
         TARGET main
