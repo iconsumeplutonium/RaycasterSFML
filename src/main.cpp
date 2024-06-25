@@ -9,11 +9,11 @@
 
 using namespace std;
 
-int defaultFOV = 110;
+int defaultFOV = 80;
 int raysPerDegree = 10;
 Utilities::DisplaySettings settings;
 bool isFocus = true;
-Utilities::RenderMode mode = Utilities::RenderMode::FIRSTPERSON;
+Utilities::RenderMode mode = Utilities::RenderMode::DOUBLEVIEW;
 
 sf::RenderWindow* window;
 sf::RenderWindow* window2;
@@ -75,7 +75,7 @@ int main() {
             UpdateFirstPersonWindow(player, clock);
         }
     }
-    else if (mode == Utilities::RenderMode::DOUBLEVIEW_FISHEYE) {
+    else if (mode == Utilities::RenderMode::DOUBLEVIEW) {
 
         while (window->isOpen() && window2->isOpen()) {
             UpdateTopDownWindow(player, clock);
@@ -174,20 +174,19 @@ void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
             if (rot > 360)
                 rot -= 360;
 
-            //cout << player.rotation << ", " << abs(rot - player.rotation) << ", " << rot << "\n";
-            //cout << theta << endl;
+
 
             bool wallWasHorizontal;
             sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
-            //cout << sf::Magnitude(intersection - player.position) << endl;
-            float columnHeight = settings.windowSize.y - sf::Magnitude(intersection - player.position);// cos(theta * M_PI / 180.0f);
+
+            float columnHeight = (settings.windowSize.y * 50) / (sf::Magnitude(intersection - player.position) * cos(theta * M_PI / 180.0f));
             Utilities::DrawColumn(x, columnHeight, columnWidth, sf::Color::Color(0, 0, 255) * (wallWasHorizontal ? 0.5f : 1.0f), settings, window2);
 
             x += columnWidth;
             //break;
         }
 
-        cout << endl;
+        //cout << endl;
 
 
     }
@@ -256,7 +255,16 @@ void DrawViews(Player player, sf::RenderWindow* window) {
 }
 
 void DrawViews2(Player player, sf::RenderWindow* window) {
-    //int numRays = FOV / settings.windowSize.x;/
+    //draw view ray
+    /*float radius = 100.0f;
+    sf::Vector2 pos = player.position;
+    sf::Vector2 end = sf::Vector2(
+        (float)(player.position.x + radius * cos(player.rotation * (M_PI / 180.0))),
+        (float)(player.position.y + radius * sin(player.rotation * (M_PI / 180.0)))
+    );
+
+    Utilities::DrawLine(pos, end, sf::Color::Yellow, window, settings);*/
+
     for (float i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i += 1.0f / raysPerDegree) {
         float rot = i;
         if (rot < 0)
