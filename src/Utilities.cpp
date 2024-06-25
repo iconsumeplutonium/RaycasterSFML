@@ -42,36 +42,20 @@ bool Utilities::IsInBounds(sf::Vector2f v, Utilities::DisplaySettings s) {
 }
 
 void Utilities::DrawColumn(float xCoord, int height, int columnWidth, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow& window) {
-    //sf::Vector2f start = sf::Vector2f(xCoord, (s.windowSize.y / 2) + height / 2);
-    //sf::Vector2f end = sf::Vector2f(xCoord, (s.windowSize.y / 2) - height / 2);
-
-    //std::cout << start << ", " << end << std::endl;
-
-    //sf::Vertex line[2];
-
-    ////draw view ray
-    //line[0].position = start;
-    //line[1].position = end;
-
-    //for (int i = 0; i <= 1; i++) {
-    //    line[i].color = c;
-    //}
-    //window.draw(line, 2, sf::Lines);
-
     sf::Vector2f topLeft     = sf::Vector2f(xCoord - (columnWidth / 2), (s.windowSize.y / 2) + height / 2);
     sf::Vector2f topRight    = sf::Vector2f(xCoord + (columnWidth / 2), (s.windowSize.y / 2) + height / 2);
     sf::Vector2f bottomLeft  = sf::Vector2f(xCoord - (columnWidth / 2), (s.windowSize.y / 2) - height / 2);
     sf::Vector2f bottomRight = sf::Vector2f(xCoord + (columnWidth / 2), (s.windowSize.y / 2) - height / 2);
 
-    sf::VertexArray quad(sf::Quads, 4);
-    quad[0].position = topLeft;
-    quad[1].position = topRight;
-    quad[2].position = bottomLeft;
-    quad[3].position = bottomRight;
+    sf::ConvexShape quad;
+    quad.setPointCount(4);
 
-    for (int i = 0; i <= 3; i++) {
-        quad[i].color = c;
-    }
+    quad.setPoint(0, topLeft);
+    quad.setPoint(1, topRight);
+    quad.setPoint(2, bottomRight);
+    quad.setPoint(3, bottomLeft);
+
+    quad.setFillColor(c);
 
     window.draw(quad);
 }

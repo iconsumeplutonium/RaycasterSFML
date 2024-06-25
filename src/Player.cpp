@@ -9,8 +9,8 @@
 using namespace std;
 
 Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, int FOV, sf::RenderWindow* window) {
-    position.x = (settings.gridSize / 2) * settings.tileSize;
-    position.y = (settings.gridSize / 2) * settings.tileSize;
+    position.x = (settings.gridSize / 2) * settings.tileSize + 0.0001f;
+    position.y = (settings.gridSize / 2) * settings.tileSize + 0.0001f;
 
     this->settings = settings;
     this->rotationSpeed = rotationSpeed;
@@ -21,7 +21,6 @@ Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float m
     body = sf::CircleShape(10);
     body.setFillColor(sf::Color::Red);
     body.setOrigin(body.getRadius(), body.getRadius());
-    UpdateBodyDisplay();
 
     rotation = 270;
 }
@@ -78,12 +77,9 @@ void Player::UpdatePosition(float deltaTime) {
     
     if (position.y > (settings.tileSize * settings.gridSize))
         position.y = (settings.tileSize * settings.gridSize);
-
-    UpdateBodyDisplay();
 }
 
 void Player::UpdateBodyDisplay() {
-    return;
     sf::Vector2 screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, settings);
     body.setPosition(screenSpacePos);
     window->draw(body);
@@ -298,7 +294,7 @@ sf::Vector2<float> Player::GetFirstVerticalIntersection(std::vector<std::vector<
     return (intersectedWall) ? rayPos : sf::Vector2f(-1.0f, -1.0f);
 }
 
-sf::Vector2<float> Player::GetFirstIntersection(std::vector<std::vector<int>> mapVector, float rotation) {
+sf::Vector2<float> Player::GetFirstIntersection(std::vector<std::vector<int>> mapVector, float rotation, bool& wallWasHorizontal) {
     sf::Vector2f closestHorizIntersect = GetFirstHorizontalIntersection(mapVector, rotation);
     sf::Vector2f closestVertIntersect = GetFirstVerticalIntersection(mapVector, rotation);
 
@@ -312,7 +308,15 @@ sf::Vector2<float> Player::GetFirstIntersection(std::vector<std::vector<int>> ma
     if (closestVertIntersect.x < 0)
         closestVertIntersect = sf::Vector2f(9999, 9999);
 
-    sf::Vector2f closestPoint = sf::Magnitude(closestHorizIntersect - position) < sf::Magnitude(closestVertIntersect - position) ? closestHorizIntersect : closestVertIntersect;
+    sf::Vector2f closestPoint;
+    if (sf::Magnitude(closestHorizIntersect - position) < sf::Magnitude(closestVertIntersect - position)) {
+        closestPoint = closestHorizIntersect;
+        wallWasHorizontal = true;
+    }
+    else {
+        closestPoint = closestVertIntersect;
+        wallWasHorizontal = false;
+    }
 
     
     return closestPoint;

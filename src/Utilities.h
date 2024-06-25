@@ -39,6 +39,10 @@ namespace sf {
     inline float Magnitude(const sf::Vector2<T> v) {
         return sqrt(v.x * v.x + v.y * v.y);
     }
+
+    inline sf::Color operator*(const sf::Color& color, const float v) {
+        return sf::Color::Color(color.r * v, color.g * v, color.b * v);
+    }
 }
 
 #endif

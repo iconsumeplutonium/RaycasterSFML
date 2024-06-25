@@ -9,10 +9,11 @@
 
 using namespace std;
 
-int FOV = 70;
+int defaultFOV = 110;
+int raysPerDegree = 10;
 Utilities::DisplaySettings settings;
 bool isFocus = true;
-Utilities::RenderMode mode = Utilities::RenderMode::FIRSTPERSON;
+Utilities::RenderMode mode = Utilities::RenderMode::TOPDOWN;
 
 std::vector<std::vector<int>> mapVector = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -30,7 +31,7 @@ std::vector<std::vector<int>> mapVector = {
 
 void GenerateGrid(sf::RenderWindow& window);
 void DrawViews(Player player, sf::RenderWindow& window);
-void DrawViews2(int FOV, Player player, sf::RenderWindow& window);
+void DrawViews2(Player player, sf::RenderWindow& window);
 
 int main() {
     settings.tileSize = 50;
@@ -38,7 +39,7 @@ int main() {
     settings.windowSize = sf::Vector2i(1280, 720);
 
     sf::RenderWindow window(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster");
-    Player player(settings, 20.0f, 100.0f, FOV, &window);
+    Player player(settings, 20.0f, 100.0f, defaultFOV, &window);
 
     sf::Clock clock;
 
@@ -70,14 +71,16 @@ int main() {
             sf::Time deltaTime = clock.restart();
             window.clear();
             GenerateGrid(window);
-            window.draw(player.body);
+            
 
             if (isFocus) {
                 player.Update(deltaTime.asSeconds());
+                player.UpdateBodyDisplay();
                 //DrawViews(player, window);
-                DrawViews2(FOV, player, window);
+                DrawViews2(player, window);
             }
 
+            window.draw(player.body);
             debugText.setString(player.DebugStatistics());
             window.draw(debugText);
             window.display();
@@ -99,25 +102,30 @@ int main() {
 
             sf::Time deltaTime = clock.restart();
             window.clear();
-            //GenerateGrid(window);
 
             if (isFocus) {
                 player.Update(deltaTime.asSeconds());
-                int x = (settings.windowSize.x / 2) - (player.FOV / 2);
+
+                int numRays = player.FOV * raysPerDegree;
+                float columnWidth = ((float) settings.windowSize.x) / numRays;
+                if (columnWidth < 2.0f) 
+                    columnWidth = 2.0f;
+                float x = 0.0f;
+
                 
-                for (int i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i++) {
+                for (float i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i += 0.1f) {
                     float rot = i;
                     if (rot < 0)
                         rot += 360;
                     if (rot > 360)
                         rot -= 360;
 
-                    sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot);
+                    bool wallWasHorizontal;
+                    sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
                     float columnHeight = sf::Magnitude(intersection);
-                    //Utilities::DrawLine(player.position, intersection, sf::Color::Magenta, window, settings);
-                    Utilities::DrawColumn(x, columnHeight, 200, sf::Color::Blue, settings, window);
+                    Utilities::DrawColumn(x, columnHeight, columnWidth, sf::Color::Color(0, 0, 255) * (wallWasHorizontal ? 0.5f : 1.0f), settings, window);
 
-                    x++;
+                    x += columnWidth;
                 }
 
 
@@ -142,7 +150,9 @@ int main() {
 
             window.clear();
 
-            Utilities::DrawColumn(settings.windowSize.x / 2, 50, 10, sf::Color::Blue, settings, window);
+            float columnWidth = 2.0f;
+            Utilities::DrawColumn(640, 50, columnWidth, sf::Color::Blue, settings, window);
+            //Utilities::DrawColumn(640 + columnWidth, 100, columnWidth, sf::Color::Red, settings, window);
 
             window.display();
         }
@@ -212,15 +222,17 @@ void DrawViews(Player player, sf::RenderWindow& window) {
     Utilities::DrawLine(pos, closestPoint, sf::Color::Magenta, window, settings);
 }
 
-void DrawViews2(int FOV, Player player, sf::RenderWindow& window) {
-    for (int i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i++) {
+void DrawViews2(Player player, sf::RenderWindow& window) {
+    //int numRays = FOV / settings.windowSize.x;/
+    for (float i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i += 1.0f / raysPerDegree) {
         float rot = i;
         if (rot < 0)
             rot += 360;
         if (rot > 360)
             rot -= 360;
 
-        sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot);
+        bool wallWasHorizontal;
+        sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
         Utilities::DrawLine(player.position, intersection, sf::Color::Magenta, window, settings);
     }
 }
