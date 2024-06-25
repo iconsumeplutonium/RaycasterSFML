@@ -25,6 +25,7 @@ namespace Utilities {
     void DrawColumn(float xCoord, int height, int columnWidth, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow* window);
     
     bool IsInBounds(sf::Vector2f v, Utilities::DisplaySettings s);
+
 }
 
 //overloading SFML's vector2 operators because it just doesnt do this already for some reason

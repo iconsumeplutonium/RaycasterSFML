@@ -44,9 +44,11 @@ int main() {
     settings.gridSize = 10;
     settings.windowSize = sf::Vector2i(1280, 720);
 
-    
+    window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
+    window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
     
     Player player(settings, 20.0f, 100.0f, defaultFOV, window);
+    
 
     sf::Clock clock;
     sf::Font font;
@@ -62,20 +64,19 @@ int main() {
     debugText.setPosition(sf::Vector2(10.0f, 10.0f));
 
     if (mode == Utilities::RenderMode::TOPDOWN) {
-        window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
+        //window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
         while (window->isOpen())
             UpdateTopDownWindow(player, clock);
         
     }
     else if (mode == Utilities::RenderMode::FIRSTPERSON) {
-        window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
+        //window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
         while (window2->isOpen()) {
             UpdateFirstPersonWindow(player, clock);
         }
     }
     else if (mode == Utilities::RenderMode::DOUBLEVIEW_FISHEYE) {
-        window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
-        window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
+
         while (window->isOpen() && window2->isOpen()) {
             UpdateTopDownWindow(player, clock);
             UpdateFirstPersonWindow(player, clock);
@@ -163,21 +164,30 @@ void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
             columnWidth = 2.0f;
         float x = 0.0f;
 
-
+        
         for (float i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i += 0.1f) {
             float rot = i;
+
+            float theta = abs(rot - player.rotation);
             if (rot < 0)
                 rot += 360;
             if (rot > 360)
                 rot -= 360;
 
+            //cout << player.rotation << ", " << abs(rot - player.rotation) << ", " << rot << "\n";
+            //cout << theta << endl;
+
             bool wallWasHorizontal;
             sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
-            float columnHeight = sf::Magnitude(intersection);
+            //cout << sf::Magnitude(intersection - player.position) << endl;
+            float columnHeight = settings.windowSize.y - sf::Magnitude(intersection - player.position);// cos(theta * M_PI / 180.0f);
             Utilities::DrawColumn(x, columnHeight, columnWidth, sf::Color::Color(0, 0, 255) * (wallWasHorizontal ? 0.5f : 1.0f), settings, window2);
 
             x += columnWidth;
+            //break;
         }
+
+        cout << endl;
 
 
     }

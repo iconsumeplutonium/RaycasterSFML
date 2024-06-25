@@ -33,10 +33,10 @@ void Player::UpdateRotation(float deltaTime) {
         rotation += 10 * rotationSpeed * deltaTime;
 
     if (rotation < 0)
-        rotation = 359;
+        rotation += 360;
 
     if (rotation >= 360)
-        rotation = 0;
+        rotation -= 360;
 }
 
 void Player::UpdatePosition(float deltaTime) {
