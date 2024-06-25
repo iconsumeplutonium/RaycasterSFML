@@ -13,16 +13,16 @@ namespace Utilities {
     };
 
     typedef enum class RenderMode {
-        TOPDOWN, FIRSTPERSON, EMPTYDEBUG
+        TOPDOWN, FIRSTPERSON, EMPTYDEBUG, DOUBLEVIEW_FISHEYE, DOUBLEVIEW
     };
 
-    void DrawLine(sf::Vector2f start, sf::Vector2f end, sf::Color color, sf::RenderWindow& window, DisplaySettings s);
+    void DrawLine(sf::Vector2f start, sf::Vector2f end, sf::Color color, sf::RenderWindow* window, DisplaySettings s);
 
 	sf::Vector2<float> TransformWorldSpaceToScreenSpace(sf::Vector2<float> worldCoord, Utilities::DisplaySettings s);
 
     //@brief Takes in a world space coordinate and displays a circle in screen space coords
     void DrawCircle(sf::Vector2f coord, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow* window);
-    void DrawColumn(float xCoord, int height, int columnWidth, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow& window);
+    void DrawColumn(float xCoord, int height, int columnWidth, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow* window);
     
     bool IsInBounds(sf::Vector2f v, Utilities::DisplaySettings s);
 }

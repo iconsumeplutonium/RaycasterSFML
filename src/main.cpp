@@ -13,7 +13,11 @@ int defaultFOV = 110;
 int raysPerDegree = 10;
 Utilities::DisplaySettings settings;
 bool isFocus = true;
-Utilities::RenderMode mode = Utilities::RenderMode::TOPDOWN;
+Utilities::RenderMode mode = Utilities::RenderMode::FIRSTPERSON;
+
+sf::RenderWindow* window;
+sf::RenderWindow* window2;
+sf::Text debugText;
 
 std::vector<std::vector<int>> mapVector = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -29,115 +33,58 @@ std::vector<std::vector<int>> mapVector = {
 };
 
 
-void GenerateGrid(sf::RenderWindow& window);
-void DrawViews(Player player, sf::RenderWindow& window);
-void DrawViews2(Player player, sf::RenderWindow& window);
+void GenerateGrid(sf::RenderWindow* window);
+void DrawViews(Player player, sf::RenderWindow* window);
+void DrawViews2(Player player, sf::RenderWindow* window);
+void UpdateTopDownWindow(Player& player, sf::Clock& clock);
+void UpdateFirstPersonWindow(Player& player, sf::Clock& clock);
 
 int main() {
     settings.tileSize = 50;
     settings.gridSize = 10;
     settings.windowSize = sf::Vector2i(1280, 720);
 
-    sf::RenderWindow window(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster");
-    Player player(settings, 20.0f, 100.0f, defaultFOV, &window);
+    
+    
+    Player player(settings, 20.0f, 100.0f, defaultFOV, window);
 
     sf::Clock clock;
+    sf::Font font;
+    if (!font.loadFromFile("fonts/ticketing.regular.ttf")) {
+        cout << "font not loaded" << endl;
+        std::string currentDir = std::filesystem::current_path().string();
+        std::cout << "Current working directory: " << currentDir << std::endl;
+    }
+    
+    debugText.setFont(font);
+    debugText.setCharacterSize(23);
+    debugText.setFillColor(sf::Color::White);
+    debugText.setPosition(sf::Vector2(10.0f, 10.0f));
 
     if (mode == Utilities::RenderMode::TOPDOWN) {
-        sf::Font font;
-        if (!font.loadFromFile("fonts/ticketing.regular.ttf")) {
-            cout << "font not loaded" << endl;
-            std::string currentDir = std::filesystem::current_path().string();
-            std::cout << "Current working directory: " << currentDir << std::endl;
-        }
-        sf::Text debugText;
-        debugText.setFont(font);
-        debugText.setCharacterSize(23);
-        debugText.setFillColor(sf::Color::White);
-        debugText.setPosition(sf::Vector2(10.0f, 10.0f));
-
-        while (window.isOpen()) {
-            sf::Event event;
-            while (window.pollEvent(event)) {
-                if (event.type == sf::Event::GainedFocus)
-                    isFocus = true;
-
-                if (event.type == sf::Event::LostFocus)
-                    isFocus = false;
-
-                if (event.type == sf::Event::Closed)
-                    window.close();
-            }
-            sf::Time deltaTime = clock.restart();
-            window.clear();
-            GenerateGrid(window);
-            
-
-            if (isFocus) {
-                player.Update(deltaTime.asSeconds());
-                player.UpdateBodyDisplay();
-                //DrawViews(player, window);
-                DrawViews2(player, window);
-            }
-
-            window.draw(player.body);
-            debugText.setString(player.DebugStatistics());
-            window.draw(debugText);
-            window.display();
-        }
+        window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
+        while (window->isOpen())
+            UpdateTopDownWindow(player, clock);
+        
     }
     else if (mode == Utilities::RenderMode::FIRSTPERSON) {
-        while (window.isOpen()) {
-            sf::Event event;
-            while (window.pollEvent(event)) {
-                if (event.type == sf::Event::GainedFocus)
-                    isFocus = true;
-
-                if (event.type == sf::Event::LostFocus)
-                    isFocus = false;
-
-                if (event.type == sf::Event::Closed)
-                    window.close();
-            }
-
-            sf::Time deltaTime = clock.restart();
-            window.clear();
-
-            if (isFocus) {
-                player.Update(deltaTime.asSeconds());
-
-                int numRays = player.FOV * raysPerDegree;
-                float columnWidth = ((float) settings.windowSize.x) / numRays;
-                if (columnWidth < 2.0f) 
-                    columnWidth = 2.0f;
-                float x = 0.0f;
-
-                
-                for (float i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i += 0.1f) {
-                    float rot = i;
-                    if (rot < 0)
-                        rot += 360;
-                    if (rot > 360)
-                        rot -= 360;
-
-                    bool wallWasHorizontal;
-                    sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
-                    float columnHeight = sf::Magnitude(intersection);
-                    Utilities::DrawColumn(x, columnHeight, columnWidth, sf::Color::Color(0, 0, 255) * (wallWasHorizontal ? 0.5f : 1.0f), settings, window);
-
-                    x += columnWidth;
-                }
-
-
-            }
-
-            window.display();
+        window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
+        while (window2->isOpen()) {
+            UpdateFirstPersonWindow(player, clock);
+        }
+    }
+    else if (mode == Utilities::RenderMode::DOUBLEVIEW_FISHEYE) {
+        window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
+        window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
+        while (window->isOpen() && window2->isOpen()) {
+            UpdateTopDownWindow(player, clock);
+            UpdateFirstPersonWindow(player, clock);
         }
     }
     else {
-        while (window.isOpen()) {
+        while (window->isOpen()) {
             sf::Event event;
-            while (window.pollEvent(event)) {
+            while (window->pollEvent(event)) {
                 if (event.type == sf::Event::GainedFocus)
                     isFocus = true;
 
@@ -145,24 +92,100 @@ int main() {
                     isFocus = false;
 
                 if (event.type == sf::Event::Closed)
-                    window.close();
+                    window->close();
             }
 
-            window.clear();
+            window->clear();
 
             float columnWidth = 2.0f;
             Utilities::DrawColumn(640, 50, columnWidth, sf::Color::Blue, settings, window);
             //Utilities::DrawColumn(640 + columnWidth, 100, columnWidth, sf::Color::Red, settings, window);
 
-            window.display();
+            window->display();
         }
     }
     
     return 0;
 }
 
+void UpdateTopDownWindow(Player& player, sf::Clock& clock) {
+    sf::Event event;
+    while (window->pollEvent(event)) {
+        if (event.type == sf::Event::GainedFocus)
+            isFocus = true;
 
-void GenerateGrid(sf::RenderWindow& window) {
+        if (event.type == sf::Event::LostFocus)
+            isFocus = false;
+
+        if (event.type == sf::Event::Closed)
+            window->close();
+    }
+    sf::Time deltaTime = clock.restart();
+    window->clear();
+    GenerateGrid(window);
+
+
+    if (isFocus) {
+        player.Update(deltaTime.asSeconds()); //todo: this should happen only once if DOUBLEVIEW is enabled
+        player.UpdateBodyDisplay();
+        //DrawViews(player, window);
+        DrawViews2(player, window);
+    }
+
+    window->draw(player.body);
+    debugText.setString(player.DebugStatistics());
+    window->draw(debugText);
+    window->display();
+}
+
+void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
+    sf::Event event;
+    while (window2->pollEvent(event)) {
+        if (event.type == sf::Event::GainedFocus)
+            isFocus = true;
+
+        if (event.type == sf::Event::LostFocus)
+            isFocus = false;
+
+        if (event.type == sf::Event::Closed)
+            window2->close();
+    }
+
+    sf::Time deltaTime = clock.restart();
+    window2->clear();
+
+    if (isFocus) {
+        player.Update(deltaTime.asSeconds());
+
+        int numRays = player.FOV * raysPerDegree;
+        float columnWidth = ((float)settings.windowSize.x) / numRays;
+        if (columnWidth < 2.0f)
+            columnWidth = 2.0f;
+        float x = 0.0f;
+
+
+        for (float i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i += 0.1f) {
+            float rot = i;
+            if (rot < 0)
+                rot += 360;
+            if (rot > 360)
+                rot -= 360;
+
+            bool wallWasHorizontal;
+            sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
+            float columnHeight = sf::Magnitude(intersection);
+            Utilities::DrawColumn(x, columnHeight, columnWidth, sf::Color::Color(0, 0, 255) * (wallWasHorizontal ? 0.5f : 1.0f), settings, window2);
+
+            x += columnWidth;
+        }
+
+
+    }
+
+    window2->display();
+}
+
+void GenerateGrid(sf::RenderWindow* window) {
     //sf::Vector2 startCoord(-(gridSize / 2.0f) * tileSize, -(gridSize / 2.0f) * tileSize);
     sf::Vector2 startCoord(0, 0);
     sf::RectangleShape tile;
@@ -177,12 +200,12 @@ void GenerateGrid(sf::RenderWindow& window) {
             
             sf::Vector2 a = Utilities::TransformWorldSpaceToScreenSpace(sf::Vector2((float)tileX * settings.tileSize, (float)tileY * settings.tileSize), settings);
             tile.setPosition(a.x, a.y);
-            window.draw(tile);
+            window->draw(tile);
         }
     }
 }
 
-void DrawViews(Player player, sf::RenderWindow& window) {
+void DrawViews(Player player, sf::RenderWindow* window) {
     sf::Vertex line[2];
     float radius = 1000.0f;
 
@@ -218,11 +241,11 @@ void DrawViews(Player player, sf::RenderWindow& window) {
     /*Utilities::DrawCircle(closestHorizIntersect, sf::Color::Magenta, settings, &window);
     Utilities::DrawCircle(closestVertIntersect, sf::Color::Magenta, settings, &window);*/
 
-    Utilities::DrawCircle(closestPoint, sf::Color::Green, settings, &window);    
+    Utilities::DrawCircle(closestPoint, sf::Color::Green, settings, window);    
     Utilities::DrawLine(pos, closestPoint, sf::Color::Magenta, window, settings);
 }
 
-void DrawViews2(Player player, sf::RenderWindow& window) {
+void DrawViews2(Player player, sf::RenderWindow* window) {
     //int numRays = FOV / settings.windowSize.x;/
     for (float i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i += 1.0f / raysPerDegree) {
         float rot = i;

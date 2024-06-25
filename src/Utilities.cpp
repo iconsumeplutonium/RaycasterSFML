@@ -10,7 +10,7 @@ sf::Vector2<float> Utilities::TransformWorldSpaceToScreenSpace(sf::Vector2<float
     return sf::Vector2f(x, y);
 }
 
-void Utilities::DrawLine(sf::Vector2f start, sf::Vector2f end, sf::Color color, sf::RenderWindow& window, Utilities::DisplaySettings s) {
+void Utilities::DrawLine(sf::Vector2f start, sf::Vector2f end, sf::Color color, sf::RenderWindow* window, Utilities::DisplaySettings s) {
     sf::Vertex line[2];
 
     //draw view ray
@@ -21,7 +21,7 @@ void Utilities::DrawLine(sf::Vector2f start, sf::Vector2f end, sf::Color color, 
         line[i].color = color;
         line[i].position = Utilities::TransformWorldSpaceToScreenSpace(line[i].position, s);
     }
-    window.draw(line, 2, sf::Lines);
+    window->draw(line, 2, sf::Lines);
 }
 
 void Utilities::DrawCircle(sf::Vector2f coord, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow* window) {
@@ -41,7 +41,7 @@ bool Utilities::IsInBounds(sf::Vector2f v, Utilities::DisplaySettings s) {
     return !(v.x < 0 || v.y < 0 || v.x > (s.tileSize * s.gridSize) || v.y > (s.tileSize * s.gridSize));
 }
 
-void Utilities::DrawColumn(float xCoord, int height, int columnWidth, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow& window) {
+void Utilities::DrawColumn(float xCoord, int height, int columnWidth, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow* window) {
     sf::Vector2f topLeft     = sf::Vector2f(xCoord - (columnWidth / 2), (s.windowSize.y / 2) + height / 2);
     sf::Vector2f topRight    = sf::Vector2f(xCoord + (columnWidth / 2), (s.windowSize.y / 2) + height / 2);
     sf::Vector2f bottomLeft  = sf::Vector2f(xCoord - (columnWidth / 2), (s.windowSize.y / 2) - height / 2);
@@ -57,5 +57,5 @@ void Utilities::DrawColumn(float xCoord, int height, int columnWidth, sf::Color 
 
     quad.setFillColor(c);
 
-    window.draw(quad);
+    window->draw(quad);
 }
