@@ -11,8 +11,8 @@ using namespace std;
 
 int FOV = 70;
 Utilities::DisplaySettings settings;
-sf::Vector2 playerPos(0, 0);
 bool isFocus = true;
+Utilities::RenderMode mode = Utilities::RenderMode::FIRSTPERSON;
 
 std::vector<std::vector<int>> mapVector = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -39,50 +39,118 @@ int main() {
 
     sf::RenderWindow window(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster");
     Player player(settings, 20.0f, 100.0f, FOV, &window);
-    
+
     sf::Clock clock;
-    sf::Font font;
-    if (!font.loadFromFile("fonts/ticketing.regular.ttf")) {
-        cout << "font not loaded" << endl;
-        std::string currentDir = std::filesystem::current_path().string();
-        std::cout << "Current working directory: " << currentDir << std::endl;
+
+    if (mode == Utilities::RenderMode::TOPDOWN) {
+        sf::Font font;
+        if (!font.loadFromFile("fonts/ticketing.regular.ttf")) {
+            cout << "font not loaded" << endl;
+            std::string currentDir = std::filesystem::current_path().string();
+            std::cout << "Current working directory: " << currentDir << std::endl;
+        }
+        sf::Text debugText;
+        debugText.setFont(font);
+        debugText.setCharacterSize(23);
+        debugText.setFillColor(sf::Color::White);
+        debugText.setPosition(sf::Vector2(10.0f, 10.0f));
+
+        while (window.isOpen()) {
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::GainedFocus)
+                    isFocus = true;
+
+                if (event.type == sf::Event::LostFocus)
+                    isFocus = false;
+
+                if (event.type == sf::Event::Closed)
+                    window.close();
+            }
+            sf::Time deltaTime = clock.restart();
+            window.clear();
+            GenerateGrid(window);
+            window.draw(player.body);
+
+            if (isFocus) {
+                player.Update(deltaTime.asSeconds());
+                //DrawViews(player, window);
+                DrawViews2(FOV, player, window);
+            }
+
+            debugText.setString(player.DebugStatistics());
+            window.draw(debugText);
+            window.display();
+        }
     }
-    sf::Text debugText;
-    debugText.setFont(font);
-    debugText.setCharacterSize(23);
-    debugText.setFillColor(sf::Color::White);
-    debugText.setPosition(sf::Vector2(10.0f, 10.0f));
+    else if (mode == Utilities::RenderMode::FIRSTPERSON) {
+        while (window.isOpen()) {
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::GainedFocus)
+                    isFocus = true;
 
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::GainedFocus)
-                isFocus = true;
-            
-            if (event.type == sf::Event::LostFocus)
-                isFocus = false;
+                if (event.type == sf::Event::LostFocus)
+                    isFocus = false;
 
-            if (event.type == sf::Event::Closed)
-                window.close();
+                if (event.type == sf::Event::Closed)
+                    window.close();
+            }
+
+            sf::Time deltaTime = clock.restart();
+            window.clear();
+            //GenerateGrid(window);
+
+            if (isFocus) {
+                player.Update(deltaTime.asSeconds());
+                int x = (settings.windowSize.x / 2) - (player.FOV / 2);
+                
+                for (int i = player.rotation - player.FOV / 2; i < player.rotation + player.FOV / 2; i++) {
+                    float rot = i;
+                    if (rot < 0)
+                        rot += 360;
+                    if (rot > 360)
+                        rot -= 360;
+
+                    sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot);
+                    float columnHeight = sf::Magnitude(intersection);
+                    //Utilities::DrawLine(player.position, intersection, sf::Color::Magenta, window, settings);
+                    Utilities::DrawColumn(x, columnHeight, 200, sf::Color::Blue, settings, window);
+
+                    x++;
+                }
+
+
+            }
+
+            window.display();
         }
-        sf::Time deltaTime = clock.restart();
-        window.clear();
-        GenerateGrid(window);
-        window.draw(player.body);
+    }
+    else {
+        while (window.isOpen()) {
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::GainedFocus)
+                    isFocus = true;
 
-        if (isFocus) {
-            player.Update(deltaTime.asSeconds());
-            //DrawViews(player, window);
-            DrawViews2(FOV, player, window);
+                if (event.type == sf::Event::LostFocus)
+                    isFocus = false;
+
+                if (event.type == sf::Event::Closed)
+                    window.close();
+            }
+
+            window.clear();
+
+            Utilities::DrawColumn(settings.windowSize.x / 2, 50, 10, sf::Color::Blue, settings, window);
+
+            window.display();
         }
-
-        debugText.setString(player.DebugStatistics());
-        window.draw(debugText);
-        window.display();
-    }                    
-
+    }
+    
     return 0;
 }
+
 
 void GenerateGrid(sf::RenderWindow& window) {
     //sf::Vector2 startCoord(-(gridSize / 2.0f) * tileSize, -(gridSize / 2.0f) * tileSize);

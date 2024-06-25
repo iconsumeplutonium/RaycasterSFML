@@ -12,25 +12,17 @@ namespace Utilities {
         sf::Vector2i windowSize;
     };
 
-    template<typename T>
-    void DrawLine(sf::Vector2<T> start, sf::Vector2<T> end, sf::Color color, sf::RenderWindow& window, DisplaySettings s) {
-        sf::Vertex line[2];
+    typedef enum class RenderMode {
+        TOPDOWN, FIRSTPERSON, EMPTYDEBUG
+    };
 
-        //draw view ray
-        line[0].position = start;
-        line[1].position = end;
-
-        for (int i = 0; i <= 1; i++) {
-            line[i].color = color;
-            line[i].position = TransformWorldSpaceToScreenSpace(line[i].position, s);
-        }
-        window.draw(line, 2, sf::Lines);
-    }
+    void DrawLine(sf::Vector2f start, sf::Vector2f end, sf::Color color, sf::RenderWindow& window, DisplaySettings s);
 
 	sf::Vector2<float> TransformWorldSpaceToScreenSpace(sf::Vector2<float> worldCoord, Utilities::DisplaySettings s);
 
     //@brief Takes in a world space coordinate and displays a circle in screen space coords
     void DrawCircle(sf::Vector2f coord, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow* window);
+    void DrawColumn(float xCoord, int height, int columnWidth, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow& window);
     
     bool IsInBounds(sf::Vector2f v, Utilities::DisplaySettings s);
 }

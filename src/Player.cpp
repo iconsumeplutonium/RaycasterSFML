@@ -83,6 +83,7 @@ void Player::UpdatePosition(float deltaTime) {
 }
 
 void Player::UpdateBodyDisplay() {
+    return;
     sf::Vector2 screenSpacePos = Utilities::TransformWorldSpaceToScreenSpace(position, settings);
     body.setPosition(screenSpacePos);
     window->draw(body);

@@ -10,6 +10,19 @@ sf::Vector2<float> Utilities::TransformWorldSpaceToScreenSpace(sf::Vector2<float
     return sf::Vector2f(x, y);
 }
 
+void Utilities::DrawLine(sf::Vector2f start, sf::Vector2f end, sf::Color color, sf::RenderWindow& window, Utilities::DisplaySettings s) {
+    sf::Vertex line[2];
+
+    //draw view ray
+    line[0].position = start;
+    line[1].position = end;
+
+    for (int i = 0; i <= 1; i++) {
+        line[i].color = color;
+        line[i].position = Utilities::TransformWorldSpaceToScreenSpace(line[i].position, s);
+    }
+    window.draw(line, 2, sf::Lines);
+}
 
 void Utilities::DrawCircle(sf::Vector2f coord, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow* window) {
     sf::CircleShape circle = sf::CircleShape(5);
@@ -26,4 +39,39 @@ void Utilities::DrawCircle(sf::Vector2f coord, sf::Color c, Utilities::DisplaySe
 
 bool Utilities::IsInBounds(sf::Vector2f v, Utilities::DisplaySettings s) {
     return !(v.x < 0 || v.y < 0 || v.x > (s.tileSize * s.gridSize) || v.y > (s.tileSize * s.gridSize));
+}
+
+void Utilities::DrawColumn(float xCoord, int height, int columnWidth, sf::Color c, Utilities::DisplaySettings s, sf::RenderWindow& window) {
+    //sf::Vector2f start = sf::Vector2f(xCoord, (s.windowSize.y / 2) + height / 2);
+    //sf::Vector2f end = sf::Vector2f(xCoord, (s.windowSize.y / 2) - height / 2);
+
+    //std::cout << start << ", " << end << std::endl;
+
+    //sf::Vertex line[2];
+
+    ////draw view ray
+    //line[0].position = start;
+    //line[1].position = end;
+
+    //for (int i = 0; i <= 1; i++) {
+    //    line[i].color = c;
+    //}
+    //window.draw(line, 2, sf::Lines);
+
+    sf::Vector2f topLeft     = sf::Vector2f(xCoord - (columnWidth / 2), (s.windowSize.y / 2) + height / 2);
+    sf::Vector2f topRight    = sf::Vector2f(xCoord + (columnWidth / 2), (s.windowSize.y / 2) + height / 2);
+    sf::Vector2f bottomLeft  = sf::Vector2f(xCoord - (columnWidth / 2), (s.windowSize.y / 2) - height / 2);
+    sf::Vector2f bottomRight = sf::Vector2f(xCoord + (columnWidth / 2), (s.windowSize.y / 2) - height / 2);
+
+    sf::VertexArray quad(sf::Quads, 4);
+    quad[0].position = topLeft;
+    quad[1].position = topRight;
+    quad[2].position = bottomLeft;
+    quad[3].position = bottomRight;
+
+    for (int i = 0; i <= 3; i++) {
+        quad[i].color = c;
+    }
+
+    window.draw(quad);
 }
