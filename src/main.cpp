@@ -10,7 +10,7 @@
 using namespace std;
 
 int defaultFOV = 80;
-int raysPerDegree = 10;
+int raysPerDegree = 8;
 Utilities::DisplaySettings settings;
 bool isFocus = true;
 Utilities::RenderMode mode = Utilities::RenderMode::DOUBLEVIEW;
@@ -18,6 +18,8 @@ Utilities::RenderMode mode = Utilities::RenderMode::DOUBLEVIEW;
 sf::RenderWindow* window;
 sf::RenderWindow* window2;
 sf::Text debugText;
+sf::RectangleShape ceilingRect;
+sf::RectangleShape floorRect;
 
 std::vector<std::vector<int>> mapVector = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -38,6 +40,7 @@ void DrawViews(Player player, sf::RenderWindow* window);
 void DrawViews2(Player player, sf::RenderWindow* window);
 void UpdateTopDownWindow(Player& player, sf::Clock& clock);
 void UpdateFirstPersonWindow(Player& player, sf::Clock& clock);
+void DrawGroundAndCeiling(sf::RenderWindow* targetWindow);
 
 int main() {
     settings.tileSize = 50;
@@ -47,7 +50,7 @@ int main() {
     window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
     window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
     
-    Player player(settings, 20.0f, 100.0f, defaultFOV, window);
+    Player player(settings, 20.0f, 100.0f, defaultFOV, window, mapVector);
     
 
     sf::Clock clock;
@@ -62,6 +65,16 @@ int main() {
     debugText.setCharacterSize(23);
     debugText.setFillColor(sf::Color::White);
     debugText.setPosition(sf::Vector2(10.0f, 10.0f));
+
+    sf::Color gray = sf::Color::Color(128, 128, 128);
+
+    ceilingRect.setPosition(sf::Vector2f(0, 0));
+    ceilingRect.setSize(sf::Vector2f(settings.windowSize.x, settings.windowSize.y / 2));
+    ceilingRect.setFillColor(gray);
+
+    floorRect.setPosition(sf::Vector2f(0, settings.windowSize.y / 2.0f));
+    floorRect.setSize(sf::Vector2f(settings.windowSize.x, settings.windowSize.y / 2));
+    floorRect.setFillColor(gray * 0.5f);
 
     if (mode == Utilities::RenderMode::TOPDOWN) {
         //window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
@@ -154,9 +167,12 @@ void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
 
     sf::Time deltaTime = clock.restart();
     window2->clear();
+    window2->draw(ceilingRect);
+    window2->draw(floorRect);
 
     if (isFocus) {
-        player.Update(deltaTime.asSeconds());
+        float delta = deltaTime.asSeconds();
+        player.Update(delta);
 
         int numRays = player.FOV * raysPerDegree;
         float columnWidth = ((float)settings.windowSize.x) / numRays;
@@ -185,6 +201,8 @@ void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
             x += columnWidth;
             //break;
         }
+        debugText.setString(to_string(int(1.0f / delta)));
+        window2->draw(debugText);
 
         //cout << endl;
 
@@ -276,4 +294,12 @@ void DrawViews2(Player player, sf::RenderWindow* window) {
         sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
         Utilities::DrawLine(player.position, intersection, sf::Color::Magenta, window, settings);
     }
+}
+
+void DrawGroundAndCeiling(sf::RenderWindow* targetWindow) {
+    
+
+    //targetWindow->draw(ceiling);
+    //targetWindow->draw(floor);
+
 }

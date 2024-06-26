@@ -8,6 +8,7 @@ class Player {
 private:
 	Utilities::DisplaySettings settings;
 	sf::RenderWindow* window;
+	std::vector<std::vector<int>> map;
 
 	void UpdateRotation(float deltaTime);
 	void UpdatePosition(float deltaTime);
@@ -21,7 +22,7 @@ public:
 	sf::CircleShape body;
 
 	//constructor
-	Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, int FOV, sf::RenderWindow* window);
+	Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, int FOV, sf::RenderWindow* window, std::vector<std::vector<int>> map);
 
 	void UpdateBodyDisplay();
 	void Update(float deltaTime);

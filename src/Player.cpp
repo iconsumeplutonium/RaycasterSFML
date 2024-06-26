@@ -8,7 +8,7 @@
 
 using namespace std;
 
-Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, int FOV, sf::RenderWindow* window) {
+Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float moveSpeed, int FOV, sf::RenderWindow* window, std::vector<std::vector<int>> map) {
     position.x = (settings.gridSize / 2) * settings.tileSize + 0.0001f;
     position.y = (settings.gridSize / 2) * settings.tileSize + 0.0001f;
 
@@ -17,6 +17,7 @@ Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float m
     this->moveSpeed = moveSpeed;
     this->window = window;
     this->FOV = FOV;
+    this->map = map;
 
     body = sf::CircleShape(10);
     body.setFillColor(sf::Color::Red);
@@ -61,11 +62,16 @@ void Player::UpdatePosition(float deltaTime) {
     float x = cos(radians) * moveDelta.x - sin(radians) * moveDelta.y;
     float y = sin(radians) * moveDelta.x + cos(radians) * moveDelta.y;
 
-    //std::cout << "(" << moveDelta.x << ", " << moveDelta.y << ")" << std::endl;
+    //basic collision detection
+    sf::Vector2f movement = sf::Vector2f(x, y) * deltaTime * moveSpeed;
+    sf::Vector2i tileCoord = sf::Vector2i((position.x + movement.x) / settings.tileSize, (position.y + movement.y) / settings.tileSize);
+    if (this->map[tileCoord.x][tileCoord.y] != 0)
+        return;
 
-    position.x += x * deltaTime * moveSpeed;
-    position.y += y * deltaTime * moveSpeed;
+    //apply motion
+    position += movement;
 
+    //map out-of-bounds checking
     if (position.x < 0)
         position.x = 0;
 
