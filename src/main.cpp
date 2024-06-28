@@ -6,6 +6,7 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
+#include <list>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ int defaultFOV = 80;
 int raysPerDegree = 8;
 Utilities::DisplaySettings settings;
 bool isFocus = true;
-Utilities::RenderMode mode = Utilities::RenderMode::DOUBLEVIEW;
+Utilities::RenderMode mode = Utilities::RenderMode::FIRSTPERSON;
 
 sf::RenderWindow* window;
 sf::RenderWindow* window2;
@@ -21,7 +22,7 @@ sf::Text debugText;
 sf::RectangleShape ceilingRect;
 sf::RectangleShape floorRect;
 
-std::vector<std::vector<int>> mapVector = {
+std::vector<std::vector<int>> mapVector;/* = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
@@ -32,7 +33,7 @@ std::vector<std::vector<int>> mapVector = {
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-};
+};*/
 
 
 void GenerateGrid(sf::RenderWindow* window);
@@ -46,6 +47,7 @@ int main() {
     settings.tileSize = 50;
     settings.gridSize = 10;
     settings.windowSize = sf::Vector2i(1280, 720);
+    mapVector = Utilities::LoadMap();
 
     window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
     window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
@@ -169,6 +171,7 @@ void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
     window2->clear();
     window2->draw(ceilingRect);
     window2->draw(floorRect);
+    std::vector<sf::Vertex> vertices;
 
     if (isFocus) {
         float delta = deltaTime.asSeconds();
@@ -196,19 +199,37 @@ void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
             sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
 
             float columnHeight = (settings.windowSize.y * 50) / (sf::Magnitude(intersection - player.position) * cos(theta * M_PI / 180.0f));
-            Utilities::DrawColumn(x, columnHeight, columnWidth, sf::Color::Color(0, 0, 255) * (wallWasHorizontal ? 0.5f : 1.0f), settings, window2);
+            //Utilities::DrawColumn(x, columnHeight, columnWidth, sf::Color::Color(0, 0, 255) * (wallWasHorizontal ? 0.5f : 1.0f), settings, window2);
+
+            sf::Vertex topLeft, topRight, bottomLeft, bottomRight;
+            sf::Color wallColor = sf::Color::Color(0, 0, 255) * (wallWasHorizontal ? 0.5f : 1.0f);
+
+            topLeft.position     = sf::Vector2f(x - (columnWidth / 2), (settings.windowSize.y / 2) + columnHeight / 2);
+            topRight.position    = sf::Vector2f(x + (columnWidth / 2), (settings.windowSize.y / 2) + columnHeight / 2);
+            bottomLeft.position  = sf::Vector2f(x - (columnWidth / 2), (settings.windowSize.y / 2) - columnHeight / 2);
+            bottomRight.position = sf::Vector2f(x + (columnWidth / 2), (settings.windowSize.y / 2) - columnHeight / 2);
+
+            topLeft.color     = wallColor;
+            topRight.color    = wallColor;
+            bottomLeft.color  = wallColor;
+            bottomRight.color = wallColor;
+
+            vertices.push_back(topLeft);
+            vertices.push_back(topRight);
+            vertices.push_back(bottomLeft);
+
+            vertices.push_back(bottomLeft);
+            vertices.push_back(topRight);
+            vertices.push_back(bottomRight);
 
             x += columnWidth;
-            //break;
         }
+
+        window2->draw(&vertices[0], vertices.size(), sf::Triangles);
         debugText.setString(to_string(int(1.0f / delta)));
         window2->draw(debugText);
-
-        //cout << endl;
-
-
     }
-
+    
     window2->display();
 }
 

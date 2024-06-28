@@ -1,6 +1,9 @@
 #include "Utilities.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <iostream>
+#include <vector>
+#include <fstream>
 
 sf::Vector2<float> Utilities::TransformWorldSpaceToScreenSpace(sf::Vector2<float> worldCoord, Utilities::DisplaySettings s) {
     //                        move 0, 0 to window center       put grid center at center of screen
@@ -58,4 +61,35 @@ void Utilities::DrawColumn(float xCoord, int height, int columnWidth, sf::Color 
     quad.setFillColor(c);
 
     window->draw(quad);
+}
+
+std::vector<std::vector<int>> Utilities::LoadMap() {
+    std::vector<std::vector<int>> mapVector;
+    std::ifstream file("maps/map1.txt");
+
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            std::vector<int> row;
+            for (char c : line) {
+                if (c >= '0' && c <= '9') {
+                    row.push_back(c - 48);
+                    std::cout << c;
+                }
+                else {
+                    std::cerr << "Unexpected character in map file '" << c << "'" << std::endl;
+                    exit(2);
+                }
+            }
+            mapVector.push_back(row);
+            std::cout << std::endl;
+        }
+        file.close();
+    }
+    else {
+        std::cerr << "Could not load map." << std::endl;
+        exit(1);
+    }
+
+    return mapVector;
 }

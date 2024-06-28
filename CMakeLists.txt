@@ -19,6 +19,17 @@ add_custom_command(TARGET main POST_BUILD
     "${CMAKE_SOURCE_DIR}/src/fonts"
     $<TARGET_FILE_DIR:main>/fonts)
 
+add_custom_command(TARGET main PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "$<TARGET_FILE_DIR:main>/maps"
+)
+
+add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/src/maps"
+    "$<TARGET_FILE_DIR:main>/maps"
+)
+
+
 if(WIN32)
     add_custom_command(
         TARGET main
