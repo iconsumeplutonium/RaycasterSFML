@@ -14,7 +14,7 @@ int defaultFOV = 80;
 int raysPerDegree = 8;
 Utilities::DisplaySettings settings;
 bool isFocus = true;
-Utilities::RenderMode mode = Utilities::RenderMode::FIRSTPERSON;
+Utilities::RenderMode mode = Utilities::RenderMode::DOUBLEVIEW;
 
 sf::RenderWindow* window;
 sf::RenderWindow* window2;
@@ -40,8 +40,7 @@ void GenerateGrid(sf::RenderWindow* window);
 void DrawViews(Player player, sf::RenderWindow* window);
 void DrawViews2(Player player, sf::RenderWindow* window);
 void UpdateTopDownWindow(Player& player, sf::Clock& clock);
-void UpdateFirstPersonWindow(Player& player, sf::Clock& clock);
-void DrawGroundAndCeiling(sf::RenderWindow* targetWindow);
+void UpdateFirstPersonWindow(Player& player, float deltaTime);
 
 int main() {
     settings.tileSize = 50;
@@ -79,22 +78,31 @@ int main() {
     floorRect.setFillColor(gray * 0.5f);
 
     if (mode == Utilities::RenderMode::TOPDOWN) {
-        //window = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (Top Down)");
-        while (window->isOpen())
+        while (window->isOpen()) {
+            sf::Time deltaTime = clock.restart();
+            player.Update(deltaTime.asSeconds());
+
             UpdateTopDownWindow(player, clock);
+        }
         
     }
     else if (mode == Utilities::RenderMode::FIRSTPERSON) {
-        //window2 = new sf::RenderWindow(sf::VideoMode(settings.windowSize.x, settings.windowSize.y), "Raycaster (First Person)");
         while (window2->isOpen()) {
-            UpdateFirstPersonWindow(player, clock);
+            sf::Time deltaTime = clock.restart();
+            player.Update(deltaTime.asSeconds());
+
+            UpdateFirstPersonWindow(player, deltaTime.asSeconds());
         }
     }
     else if (mode == Utilities::RenderMode::DOUBLEVIEW) {
 
         while (window->isOpen() && window2->isOpen()) {
+            sf::Time deltaTime = clock.restart();
+            float delta = deltaTime.asSeconds();
+            player.Update(delta);
+
             UpdateTopDownWindow(player, clock);
-            UpdateFirstPersonWindow(player, clock);
+            UpdateFirstPersonWindow(player, delta);
         }
     }
     else {
@@ -136,15 +144,12 @@ void UpdateTopDownWindow(Player& player, sf::Clock& clock) {
         if (event.type == sf::Event::Closed)
             window->close();
     }
-    sf::Time deltaTime = clock.restart();
     window->clear();
     GenerateGrid(window);
 
 
     if (isFocus) {
-        player.Update(deltaTime.asSeconds()); //todo: this should happen only once if DOUBLEVIEW is enabled
         player.UpdateBodyDisplay();
-        //DrawViews(player, window);
         DrawViews2(player, window);
     }
 
@@ -154,7 +159,7 @@ void UpdateTopDownWindow(Player& player, sf::Clock& clock) {
     window->display();
 }
 
-void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
+void UpdateFirstPersonWindow(Player& player, float deltaTime) {
     sf::Event event;
     while (window2->pollEvent(event)) {
         if (event.type == sf::Event::GainedFocus)
@@ -167,15 +172,12 @@ void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
             window2->close();
     }
 
-    sf::Time deltaTime = clock.restart();
     window2->clear();
     window2->draw(ceilingRect);
     window2->draw(floorRect);
     std::vector<sf::Vertex> vertices;
 
-    if (isFocus) {
-        float delta = deltaTime.asSeconds();
-        player.Update(delta);
+    if (true) {
 
         int numRays = player.FOV * raysPerDegree;
         float columnWidth = ((float)settings.windowSize.x) / numRays;
@@ -226,8 +228,8 @@ void UpdateFirstPersonWindow(Player& player, sf::Clock& clock) {
         }
 
         window2->draw(&vertices[0], vertices.size(), sf::Triangles);
-        debugText.setString(to_string(int(1.0f / delta)));
-        window2->draw(debugText);
+        debugText.setString(to_string(int(1.0f / deltaTime)));
+        //window2->draw(debugText);
     }
     
     window2->display();
@@ -315,12 +317,4 @@ void DrawViews2(Player player, sf::RenderWindow* window) {
         sf::Vector2f intersection = player.GetFirstIntersection(mapVector, rot, wallWasHorizontal);
         Utilities::DrawLine(player.position, intersection, sf::Color::Magenta, window, settings);
     }
-}
-
-void DrawGroundAndCeiling(sf::RenderWindow* targetWindow) {
-    
-
-    //targetWindow->draw(ceiling);
-    //targetWindow->draw(floor);
-
 }

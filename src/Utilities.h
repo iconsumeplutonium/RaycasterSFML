@@ -13,7 +13,7 @@ namespace Utilities {
     };
 
     typedef enum class RenderMode {
-        TOPDOWN, FIRSTPERSON, EMPTYDEBUG, DOUBLEVIEW_FISHEYE, DOUBLEVIEW
+        TOPDOWN, FIRSTPERSON, EMPTYDEBUG, DOUBLEVIEW
     };
 
     void DrawLine(sf::Vector2f start, sf::Vector2f end, sf::Color color, sf::RenderWindow* window, DisplaySettings s);

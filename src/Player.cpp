@@ -28,10 +28,10 @@ Player::Player(Utilities::DisplaySettings settings, float rotationSpeed, float m
 
 void Player::UpdateRotation(float deltaTime) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-        rotation -= 10 * rotationSpeed * deltaTime;
+        rotation -= 5 * rotationSpeed * deltaTime;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-        rotation += 10 * rotationSpeed * deltaTime;
+        rotation += 5 * rotationSpeed * deltaTime;
 
     if (rotation < 0)
         rotation += 360;
