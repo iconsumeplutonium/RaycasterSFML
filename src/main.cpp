@@ -22,19 +22,7 @@ sf::Text debugText;
 sf::RectangleShape ceilingRect;
 sf::RectangleShape floorRect;
 
-std::vector<std::vector<int>> mapVector;/* = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 1, 1, 1, 0, 0, 0, 1},
-    {1, 0, 1, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-};*/
-
+std::vector<std::vector<int>> mapVector;
 
 void GenerateGrid(sf::RenderWindow* window);
 void DrawViews(Player player, sf::RenderWindow* window);
@@ -177,7 +165,7 @@ void UpdateFirstPersonWindow(Player& player, float deltaTime) {
     window2->draw(floorRect);
     std::vector<sf::Vertex> vertices;
 
-    if (true) {
+    if (isFocus) {
 
         int numRays = player.FOV * raysPerDegree;
         float columnWidth = ((float)settings.windowSize.x) / numRays;
